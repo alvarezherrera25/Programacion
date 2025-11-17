@@ -13,4 +13,3 @@ public class ProgtemaEv1_7 {
         System.out.println("El salario semanal es de: " + salario + " euros.");
     }
 }
-hola
