@@ -21,7 +21,7 @@ public class ProgtemaEv1_5 {
             } else{
                 N2 = M - (N1 * 0.3);
                 N2 = N2 / 0.7;
-                System.out.print("Tienes que sacar en el segundo examen:" + N2);
+                System.out.printf("Tienes que sacar en el segundo examen: %.2f%n", N2);
             }
         }
     }
