@@ -11,9 +11,7 @@ public class ProgtemaEv1_16 {
         System.out.print("Introduce el NÚMERO 2 (misma longitud): ");
         long num2 = sc.nextLong();
 
-
         long mezclaInversa = 0; 
-
 
         while (num1 > 0) {
             
