@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Progtema4;
 
 import java.util.Scanner;
 /**
@@ -38,7 +37,7 @@ public class Progtema4_7 {
             }
             System.out.println("Mayúsculas: " + mays);
             System.out.println("Minúsculas: " + mins);
-            System.out.println("Numeros: " + mins);
+            System.out.println("Numeros: " + num);
         }
     }
 }

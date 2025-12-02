@@ -14,7 +14,7 @@ import java.util.Scanner;
  */
 public class Progtema4_10 {
     public static void main(String[] args) {
-    Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         int totalCodigos = 0;
         int mujeresPrimero = 0;
         int mujeresSegundo = 0;
@@ -27,49 +27,54 @@ public class Progtema4_10 {
         do {
             System.out.print("Introduce tu codigo de 8 numeros: ");
             codigo = sc.nextLine().toUpperCase();
-            if (codigo.length() != 8) {
-                System.out.println("Error, vuelve a intentarlo");
-                System.out.print("Introduce tu codigo de 8 numeros: ");
-            } else {
 
-                String anioSt = codigo.substring(0, 4);
-                int anio = Integer.parseInt(anioSt);
-                if ((anio >= 1990) && (anio <= 1995)) {
+            if (!codigo.equals("00000000")) {
 
-                    curso = codigo.charAt(5);
-                    sexo = codigo.charAt(4);
-                    if (sexo == 'M') {
-                        if (curso == '1') {
-                            mujeresPrimero++;
-                            totalCodigos++;
-                        } else if (curso == '2') {
-                            mujeresSegundo++;
-                            totalCodigos++;
+                if (codigo.length() != 8) {
+                    System.out.println("Error, vuelve a intentarlo");
+                } else {
+                    // Mantenemos la lógica de String (sin Integer)
+                    String anioSt = codigo.substring(0, 4);
+
+                    // Usamos compareTo para rango de años (String)
+                    if (anioSt.compareTo("1990") >= 0 && anioSt.compareTo("1995") <= 0) {
+                        
+                        curso = codigo.charAt(5);
+                        sexo = codigo.charAt(4);
+
+                        if (sexo == 'M') {
+                            if (curso == '1') {
+                                mujeresPrimero++;
+                                totalCodigos++;
+                            } else if (curso == '2') {
+                                mujeresSegundo++;
+                                totalCodigos++;
+                            } else {
+                                System.out.println("Error, tiene que ser curso 1 o 2");
+                            }
+                        } else if (sexo == 'H') {
+                            if (curso == '1') {
+                                hombresPrimero++;
+                                totalCodigos++;
+                            } else if (curso == '2') {
+                                hombresSegundo++;
+                                totalCodigos++;
+                            } else {
+                                System.out.println("Error, tiene que ser curso 1 o 2");
+                            }
                         } else {
-                             System.out.println("Error, tiene q ser curso 1 o 2");
+                            System.out.println("Sexo incorrecto");
                         }
 
-                    } else if (sexo == 'H') {
-                        if (curso == '1') {
-                            hombresPrimero++;
-                            totalCodigos++;
-                        } else if (curso == '2') {
-                            hombresSegundo++;
-                            totalCodigos++;
-
-                        } else {
-                            System.out.println("Error, tiene q ser curso 1 o 2");
-
-                        }
-                    }else {
-                         System.out.println("Seño incorrecto");
+                    } else {
+                        System.out.println("Error, año fuera de rango");
                     }
-                }else {
-                     System.out.println("Error, año fuera de rango");
                 }
-            }
+            } // Cierre del if (!codigo.equals("00000000"))
+
         } while (!codigo.equals("00000000"));
- System.out.println("\n--- INFORME FINAL ---");
+
+        System.out.println("\n--- INFORME FINAL ---");
         System.out.println("Mujeres en primero: " + mujeresPrimero);
         System.out.println("Hombres en primero: " + hombresPrimero);
         System.out.println("Mujeres en segundo: " + mujeresSegundo);
