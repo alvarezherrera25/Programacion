@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Progtema4;
+
 
 import java.util.Scanner;
 /**
@@ -12,16 +12,16 @@ import java.util.Scanner;
 public class Progtema4_4 {
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
 
         // 1. Leer la cadena
         System.out.println("Introduce una cadena:");
-        String cadena = scanner.nextLine();
+        String cadena = sc.nextLine();
 
         // 2. Leer la opción (M o m)
         System.out.print("Opción ('M' = MAYUSCULAS, 'm' = minusculas): ");
         // Leemos la línea completa y tomamos solo el primer carácter
-        char opcion = scanner.nextLine().charAt(0);
+        char opcion = sc.nextLine().charAt(0);
 
         String resultado;
 
