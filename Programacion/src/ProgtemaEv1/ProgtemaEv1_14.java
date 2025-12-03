@@ -23,7 +23,7 @@ public static void main(String[] args) {
 
     System.out.println("Piramide");
 
-        if (direccion == 1) {
+        if (direccion == 1) { //arriba
             for (int i = 0; i < altura; i++) {
                 // Espacios
                 for (int j = 0; j < altura - i - 1; j++) {
@@ -35,7 +35,7 @@ public static void main(String[] args) {
                 }
                 System.out.println();
             }
-        } else if (direccion == 2) { 
+        } else if (direccion == 2) { //abajo
             for (int i = altura - 1; i >= 0; i--) {
                 // Espacios
                 for (int j = 0; j < altura - i - 1; j++) {
@@ -47,7 +47,7 @@ public static void main(String[] args) {
                 }
                 System.out.println();
             }
-        } else if (direccion == 3) {
+        } else if (direccion == 3) { //derecha
            // Parte superior
             for (int i = 0; i < altura; i++) {
                 // Caracteres
@@ -63,7 +63,7 @@ public static void main(String[] args) {
                 }
                 System.out.println();
             }
-        } else if (direccion == 4) {
+        } else if (direccion == 4) { //izquierda
             // Parte superior
             for (int i = 0; i < altura; i++) {
                 // Espacios
