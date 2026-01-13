@@ -80,7 +80,7 @@ def mover_mouse_relativo(dx, dy):
 # -----------------------------------------------------------------------------
 # CONFIGURACIÓN
 # -----------------------------------------------------------------------------
-MODO_ENTRENAMIENTO = False # FALSE = MODO JUEGO (YOLO PERSONAS)
+MODO_ENTRENAMIENTO = False # TRUE = MODO AIM TRAINER (COLORES), FALSE = MODO JUEGO (YOLO)
 
 class DetectorIA:
     def __init__(self):
@@ -139,16 +139,51 @@ class DetectorIA:
             mis_cajas = []
 
             if MODO_ENTRENAMIENTO:
-                # --- LÓGICA DE AIM TRAINER (ESFERA AZUL) ---
-                pass # No se usa aquí
+                # --- LÓGICA DE AIM TRAINER (ESFERA AZUL/NARANJA) ---
+                hsv = cv2.cvtColor(img_to_process, cv2.COLOR_BGR2HSV)
+                
+                # Rango AZUL (Ajustado)
+                lower_blue = np.array([90, 140, 60])
+                upper_blue = np.array([130, 255, 255])
+                
+                # Rango NARANJA (Ajustado)
+                lower_orange = np.array([10, 140, 140])
+                upper_orange = np.array([25, 255, 255])
+                
+                mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+                mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+                
+                # Combinar máscaras (Quitamos Rojo por ser ruidoso)
+                mask = mask_blue | mask_orange
+                
+                # Operación morfológica para limpiar ruido
+                kernel = np.ones((3,3), np.uint8)
+                mask = cv2.erode(mask, kernel, iterations=1)
+                mask = cv2.dilate(mask, kernel, iterations=2)
+                
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                
+                for cnt in contours:
+                    area = cv2.contourArea(cnt)
+                    # Filtro de tamaño más estricto (200px mínimo)
+                    if 200 < area < 15000:
+                        x, y, w, h = cv2.boundingRect(cnt)
+                        
+                        # Filtro de Forma (Aspect Ratio) - Buscamos circulos/cuadrados
+                        aspect_ratio = float(w)/h
+                        if 0.6 < aspect_ratio < 1.4:
+                             mis_cajas.append([x, y, x + w, y + h])
             
             else:
-                # --- LÓGICA DE JUEGO (YOLO IA) ---
-                results = self.model.predict(img_to_process, classes=[0], conf=self.conf_threshold, 
-                                           imgsz=320, verbose=False, half=False)
-                # Extraer cajas en formato Numpy directo
-                if len(results[0].boxes) > 0:
-                     mis_cajas = results[0].boxes.xyxy.cpu().numpy().tolist()
+                # --- LÓGICA DE JUEGO (YOLO IA - Detección de Forma) ---
+                # Usamos .track() en lugar de .predict() para seguimiento temporal (Movimiento)
+                results = self.model.track(img_to_process, classes=[0], conf=self.conf_threshold, 
+                                           imgsz=320, verbose=False, persist=True, tracker="bytetrack.yaml")
+                
+                # Extraer cajas
+                if results[0].boxes:
+                    mis_cajas = results[0].boxes.xyxy.cpu().numpy().tolist()
+
 
             with self.lock:
                 self.latest_boxes = mis_cajas
@@ -233,26 +268,23 @@ class DetectorIA:
                     cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.line(annotated_frame, (mid, mid), (cx, cy), (0, 0, 255), 1)
 
-                # AIM ASSIST (HUMANIZADO: Flick Rápido + Micro-ajuste)
+                # AIM ASSIST (MODO HARD LOCK / INMEDIATO)
                 if EJECUTANDO:
                     # Distancia real al centro
                     dx = cx - mid
                     dy = cy - mid 
-                    dist = math.hypot(dx, dy)
                     
-                    # CURVA "HYBRID ASSIST" (Suave y respetuosa)
-                    # 25% Base -> 55% Max
-                    # Diseñada para "empujar" sin pelear contra tu mano.
-                    
-                    factor_dist = min(dist, 60.0) / 60.0 
-                    speed_factor = 0.25 + (factor_dist * 0.30)
+                    # --- CONFIGURACIÓN AGRESIVA ---
+                    # Sin curvas, sin aceleración: Movimiento directo.
+                    speed_factor = 1.0  # 1.0 = Movimiento instantáneo a la cabeza (Snap)
                     
                     step_x = dx * speed_factor
                     step_y = dy * speed_factor
                     
-                    # LIMITADOR DE FUERZA (Anti-Fight)
-                    # Nunca mueve más de 12 píxeles por frame para que tu mano mande.
-                    LIMIT = 12.0
+                    # LIMITADOR DE FUERZA (Aumentado drásticamente)
+                    # Permitimos movimientos rápidos para "fijar" (Lock)
+                    LIMIT = 100.0 # Antes 12.0
+                    
                     step_x = max(-LIMIT, min(LIMIT, step_x))
                     step_y = max(-LIMIT, min(LIMIT, step_y))
                     

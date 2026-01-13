@@ -258,26 +258,23 @@ class DetectorIA:
                     cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.line(annotated_frame, (mid, mid), (cx, cy), (0, 0, 255), 1)
 
-                # AIM ASSIST (HUMANIZADO: Flick Rápido + Micro-ajuste)
+                # AIM ASSIST (MODO HARD LOCK / INMEDIATO)
                 if EJECUTANDO:
                     # Distancia real al centro
                     dx = cx - mid
                     dy = cy - mid 
-                    dist = math.hypot(dx, dy)
                     
-                    # CURVA "HYBRID ASSIST" (Suave y respetuosa)
-                    # 25% Base -> 55% Max
-                    # Diseñada para "empujar" sin pelear contra tu mano.
-                    
-                    factor_dist = min(dist, 60.0) / 60.0 
-                    speed_factor = 0.25 + (factor_dist * 0.30)
+                    # --- CONFIGURACIÓN AGRESIVA ---
+                    # Sin curvas, sin aceleración: Movimiento directo.
+                    speed_factor = 1.0  # 1.0 = Movimiento instantáneo
                     
                     step_x = dx * speed_factor
                     step_y = dy * speed_factor
                     
-                    # LIMITADOR DE FUERZA (Anti-Fight)
-                    # Nunca mueve más de 12 píxeles por frame para que tu mano mande.
-                    LIMIT = 12.0
+                    # LIMITADOR DE FUERZA (Aumentado drásticamente)
+                    # Permitimos movimientos rápidos para "fijar" (Lock)
+                    LIMIT = 100.0 # Antes 12.0
+                    
                     step_x = max(-LIMIT, min(LIMIT, step_x))
                     step_y = max(-LIMIT, min(LIMIT, step_y))
                     
