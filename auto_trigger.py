@@ -1,23 +1,26 @@
-import pyautogui
+import cv2
+import numpy as np
+import mss
 import time
 import sys
 import threading
 import ctypes
-import math
 import winsound
 import random
 import os
+import math
+from ultralytics import YOLO
 
 # -----------------------------------------------------------------------------
-# CONFIGURACIÓN DE PANTALLA
+# CONFIGURACIÓN DE PANTALLA Y SISTEMA
 # -----------------------------------------------------------------------------
 try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(2) 
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
 except Exception:
     pass
 
 # -----------------------------------------------------------------------------
-# MOTOR DE INPUT (SCANCODES PUROS)
+# MOTOR DE INPUT (SCANCODES PUROS) - IGUAL QUE ANTES (Funciona bien)
 # -----------------------------------------------------------------------------
 user32 = ctypes.windll.user32
 
@@ -34,8 +37,8 @@ class Input(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong), ("ii", Input_I)]
 
 # Scancodes físicos
-SCANCODE_9_TOP = 0x0A    
-VK_N_SPANISH = 0xC0      
+SCANCODE_9_TOP = 0x0A # Tecla '9'
+VK_N_SPANISH = 0xC0   # Tecla 'Ñ'
 
 def enviar_tecla_scancode(scancode):
     extra = ctypes.c_ulong(0)
@@ -45,215 +48,343 @@ def enviar_tecla_scancode(scancode):
     x_down = Input(ctypes.c_ulong(1), ii_down)
     user32.SendInput(1, ctypes.pointer(x_down), ctypes.sizeof(x_down))
 
-    # TIEMPO DE PULSACIÓN ULTRACORTO (PRECISIÓN)
-    # Entre 30ms y 60ms para evitar recoil
-    time.sleep(random.uniform(0.03, 0.06))
+    # RECUPERACIÓN (Recoil control simplificado)
+    time.sleep(random.uniform(0.02, 0.05))
 
-    # UP
+def disparo_tactico():
+    """Simula clic izquierdo del mouse"""
+    extra = ctypes.c_ulong(0)
+    ii_down = Input_I()
+    ii_down.mi = MouseInput(0, 0, 0, 0x0002, 0, ctypes.pointer(extra)) # Left Down
+    x_down = Input(ctypes.c_ulong(0), ii_down)
+    user32.SendInput(1, ctypes.pointer(x_down), ctypes.sizeof(x_down))
+    
+    time.sleep(random.uniform(0.01, 0.03))
+    
     ii_up = Input_I()
-    ii_up.ki = KeyBdInput(0, scancode, 0x0008 | 0x0002, 0, ctypes.pointer(extra))
-    x_up = Input(ctypes.c_ulong(1), ii_up)
+    ii_up.mi = MouseInput(0, 0, 0, 0x0004, 0, ctypes.pointer(extra)) # Left Up
+    x_up = Input(ctypes.c_ulong(0), ii_up)
     user32.SendInput(1, ctypes.pointer(x_up), ctypes.sizeof(x_up))
 
-def presionar_9_tap():
-    """Disparo de precisión única"""
-    enviar_tecla_scancode(SCANCODE_9_TOP)
+# -----------------------------------------------------------------------------
+# LÓGICA DE IA (YOLOv8 + MSS)
+# -----------------------------------------------------------------------------
+def mover_mouse_relativo(dx, dy):
+    extra = ctypes.c_ulong(0)
+    # MOUSEEVENTF_MOVE = 0x0001
+    ii = Input_I()
+    ii.mi = MouseInput(int(dx), int(dy), 0, 0x0001, 0, ctypes.pointer(extra))
+    cp = Input(ctypes.c_ulong(0), ii) 
+    user32.SendInput(1, ctypes.pointer(cp), ctypes.sizeof(cp))
 
 # -----------------------------------------------------------------------------
-# LECTURA DE PANTALLA (GDI)
+# CONFIGURACIÓN
 # -----------------------------------------------------------------------------
-gdi32 = ctypes.windll.gdi32
+MODO_ENTRENAMIENTO = True # SI ES TRUE: Detecta CÍRCULOS DE COLORES (Aim Trainer). SI ES FALSE: Detecta PERSONAS (YOLO)
 
-def obtener_pixel_gdi(x, y):
-    hdc = user32.GetDC(0)
-    pixel = gdi32.GetPixel(hdc, x, y)
-    user32.ReleaseDC(0, hdc)
-    red = pixel & 0xFF
-    green = (pixel >> 8) & 0xFF
-    blue = (pixel >> 16) & 0xFF
-    return (red, green, blue)
-
-def dibujar_cuadro_rojo(x, y, radio):
-    hdc = user32.GetDC(0)
-    color = 0x0000FF 
-    for i in range(x - radio, x + radio): gdi32.SetPixel(hdc, i, y - radio, color)
-    for i in range(x - radio, x + radio): gdi32.SetPixel(hdc, i, y + radio, color)
-    for i in range(y - radio, y + radio): gdi32.SetPixel(hdc, x - radio, i, color)
-    for i in range(y - radio, y + radio): gdi32.SetPixel(hdc, x + radio, i, color)
-    user32.ReleaseDC(0, hdc)
-
-# -----------------------------------------------------------------------------
-# LÓGICA PRINCIPAL - MODO FRANCOTIRADOR
-# -----------------------------------------------------------------------------
-# RADIO REDUCIDO AL MÍNIMO PARA MÁXIMA PRECISIÓN
-RADIO_ESCANEO = 1         # Solo 1 pixel alrededor del centro (Matriz de 3x3 píxeles total)
-OFFSET_Y_DEFAULT = 0      # Centro exacto
-offset_actual = OFFSET_Y_DEFAULT 
-
-EJECUTANDO = False      
-PROGRAMA_ACTIVO = True  
-OBJETIVO_COLOR = None     
-TOLERANCIA = 55           # Tolerancia ajustada a 55
-SONIDO_ACTIVADO = True    
-
-def calcular_distancia_color(c1, c2):
-    return math.sqrt((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2 + (c1[2] - c2[2])**2)
-
-def es_perfil_valorant(r, g, b):
-    # Lógica endurecida:
-    # 1. Debe ser bastante brillante (R y B > 140)
-    if r < 140 or b < 140: return False
-    # 2. La diferencia con el verde debe ser muy clara (> 35)
-    # Esto evita disparar a paredes ligeramente lilas o sombras.
-    return (r > g + 35) and (b > g + 35)
-
-def buscar_en_area_gdi(centro_x, zona_y):
-    # Al ser un radio tan pequeño (1), revisamos cada píxel sin saltos
-    for x in range(centro_x - RADIO_ESCANEO, centro_x + RADIO_ESCANEO + 1):
-        for y in range(zona_y - RADIO_ESCANEO, zona_y + RADIO_ESCANEO + 1):
-            r, g, b = obtener_pixel_gdi(x, y)
-            
-            if OBJETIVO_COLOR:
-                if calcular_distancia_color((r,g,b), OBJETIVO_COLOR) < TOLERANCIA:
-                    return True, (r,g,b)
-            else:
-                if es_perfil_valorant(r, g, b):
-                    return True, (r,g,b)
-    return False, None
-
-def tarea_escanear(centro_x, centro_y):
-    global EJECUTANDO
-    zona_y = centro_y + offset_actual
-    print(f"\n[Sistema] MODO PRECISIÓN EXTREMA (Radio {RADIO_ESCANEO}px).")
-    ultimo_disparo = 0
-    cooldown = 0.15 
-
-    while PROGRAMA_ACTIVO:
-        if EJECUTANDO:
-            try:
-                encontrado, color = buscar_en_area_gdi(centro_x, zona_y)
-
-                if encontrado and (time.time() - ultimo_disparo > cooldown):
-                    presionar_9_tap()
-                    if SONIDO_ACTIVADO: winsound.Beep(3500, 5) # Beep más agudo y corto
-                    ultimo_disparo = time.time()
-            except Exception:
-                pass
+class DetectorIA:
+    def __init__(self):
+        self.fov_size = 320 
+        self.conf_threshold = 0.30 
         
-        # Loop ultrarrápido
-        time.sleep(0.0005) 
+        # Acumuladores para movimiento suave (Sub-pixel)
+        self.accum_x = 0.0
+        self.accum_y = 0.0
+        
+        # Solo cargamos YOLO si NO estamos en modo entrenamiento
+        if not MODO_ENTRENAMIENTO:
+            print("[IA] Cargando modelo YOLOv8 Nano (Optimizado)...")
+            self.model = YOLO("yolov8n.pt") 
+        else:
+            print("[SISTEMA] MODO ENTRENAMIENTO (Aim Trainer) ACTIVADO")
+            print("Detectando objetivos: ROJO, CYAN, NARANJA")
+
+        self.sct = mss.mss()
+        self.ancho_pantalla = user32.GetSystemMetrics(0)
+        self.alto_pantalla = user32.GetSystemMetrics(1)
+        self.center_x = self.ancho_pantalla // 2
+        self.center_y = self.alto_pantalla // 2
+        
+        self.monitor = {
+            
+            "top": self.center_y - (self.fov_size // 2),
+            "left": self.center_x - (self.fov_size // 2),
+            "width": self.fov_size,
+            "height": self.fov_size
+        }
+        
+        # Variables para asincronía
+        self.lock = threading.Lock()
+        self.latest_img = None
+        self.latest_boxes = [] 
+        self.running = True
+        
+        # Hilo de inferencia dedicado
+        self.t_inferencia = threading.Thread(target=self._inference_loop)
+        self.t_inferencia.daemon = True
+        self.t_inferencia.start()
+        
+
+    def _inference_loop(self):
+        """Hilo que corre la IA lo más rápido posible sin bloquear la vista"""
+        while self.running:
+            img_to_process = None
+            with self.lock:
+                if self.latest_img is not None:
+                    img_to_process = self.latest_img.copy()
+            
+            if img_to_process is None:
+                time.sleep(0.01)
+                continue
+
+            mis_cajas = []
+
+            if MODO_ENTRENAMIENTO:
+                # --- LÓGICA DE AIM TRAINER (ESFERA AZUL) ---
+                hsv = cv2.cvtColor(img_to_process, cv2.COLOR_BGR2HSV)
+                
+                # Rango AZUL (El color principal de la esfera)
+                # Cubre desde Cyan (90) hasta Azul profundo (135)
+                lower_blue = np.array([90, 120, 50])
+                upper_blue = np.array([135, 255, 255])
+                
+                # Rango NARANJA (El punto central y reflejos)
+                lower_orange = np.array([10, 120, 120])
+                upper_orange = np.array([25, 255, 255])
+                
+                mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+                mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+                
+                mask = mask_blue | mask_orange
+                
+                # Encontrar contornos
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                
+                for cnt in contours:
+                    area = cv2.contourArea(cnt)
+                    # Filtrar ruido
+                    if 100 < area < 20000:
+                        x, y, w, h = cv2.boundingRect(cnt)
+                        mis_cajas.append([x, y, x + w, y + h])
+            
+            else:
+                # --- LÓGICA DE JUEGO (YOLO IA) ---
+                results = self.model.predict(img_to_process, classes=[0], conf=self.conf_threshold, 
+                                           imgsz=320, verbose=False, half=False)
+                # Extraer cajas en formato Numpy directo
+                if len(results[0].boxes) > 0:
+                     mis_cajas = results[0].boxes.xyxy.cpu().numpy().tolist()
+
+            with self.lock:
+                self.latest_boxes = mis_cajas
+
+    def es_enemigo_por_color(self, img_roi):
+        # En modo entrenamiento, asumimos que si el detector de color lo vio, ES válido.
+        if MODO_ENTRENAMIENTO: return True
+
+        hsv = cv2.cvtColor(img_roi, cv2.COLOR_BGR2HSV)
+        mask1 = cv2.inRange(hsv, np.array([0, 100, 100]), np.array([10, 255, 255]))
+        mask2 = cv2.inRange(hsv, np.array([170, 100, 100]), np.array([180, 255, 255]))
+        mask3 = cv2.inRange(hsv, np.array([130, 100, 100]), np.array([160, 255, 255]))
+        mask4 = cv2.inRange(hsv, np.array([20, 100, 100]), np.array([35, 255, 255]))
+        mask = mask1 | mask2 | mask3 | mask4
+        return cv2.countNonZero(mask) > 5
+
+    def procesar_frame(self, debug=False):
+        # 1. Captura (ALTA VELOCIDAD)
+        screenshot = self.sct.grab(self.monitor)
+        img = np.array(screenshot)
+        img = img[:, :, :3] 
+        
+        # Actualizar imagen para el hilo de IA
+        with self.lock:
+            self.latest_img = img
+
+        target_found = False
+        
+        # Usar las ÚLTIMAS detecciones disponibles (pueden ser del frame anterior)
+        detecciones = self.latest_boxes
+        
+        # Debug Frame
+        annotated_frame = None
+        if debug:
+            annotated_frame = img.copy()
+            mid = self.fov_size // 2
+            cv2.rectangle(annotated_frame, (mid-2, mid-2), (mid+2, mid+2), (0, 255, 0), 2)
+            estado = "ACTIVADO" if EJECUTANDO else "ESPERA"
+            cv2.putText(annotated_frame, estado, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255) if EJECUTANDO else (0,255,255), 2)
+
+        if detecciones:
+            mid = self.fov_size // 2
+            mejor_enemigo = None
+            menor_distancia = 9999
+            
+            for box in detecciones:
+                x1, y1, x2, y2 = map(int, box[:4])
+                
+                # FILTRADO: Arma propia (Solo en modo persona)
+                if not MODO_ENTRENAMIENTO and y2 >= self.fov_size - 5: # Arma propia
+                    if debug and annotated_frame is not None: 
+                        cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                    continue
+                
+                # Visualización básica
+                if debug and annotated_frame is not None:
+                     cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 255), 1)
+
+                roi = img[y1:y2, x1:x2]
+                if roi.size == 0 or not self.es_enemigo_por_color(roi):
+                    if debug and annotated_frame is not None: 
+                        cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
+                    continue
+                
+                # Calcular centro enemigo
+                cx = (x1 + x2) // 2
+                cy = (y1 + y2) // 2
+                
+                # Solo nos interesa si está CERCA del centro (Aim FOV 100px aprox)
+                dist = math.sqrt((cx - mid)**2 + (cy - mid)**2)
+                
+                if dist < menor_distancia:
+                    menor_distancia = dist
+                    mejor_enemigo = (x1, y1, x2, y2, cx, cy)
+            
+            # --- LÓGICA DE TARGET VALIDADO ---
+            if mejor_enemigo:
+                x1, y1, x2, y2, cx, cy = mejor_enemigo
+                
+                # Visualizar target elegido
+                if debug and annotated_frame is not None:
+                    cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    cv2.line(annotated_frame, (mid, mid), (cx, cy), (0, 0, 255), 1)
+
+                # AIM ASSIST (MODO HARD LOCK / INMEDIATO)
+                if EJECUTANDO:
+                    # Distancia real al centro
+                    dx = cx - mid
+                    dy = cy - mid 
+                    
+                    # --- CONFIGURACIÓN AGRESIVA ---
+                    # Sin curvas, sin aceleración: Movimiento directo.
+                    speed_factor = 1.0  # 1.0 = Movimiento instantáneo
+                    
+                    step_x = dx * speed_factor
+                    step_y = dy * speed_factor
+                    
+                    # LIMITADOR DE FUERZA (Aumentado drásticamente)
+                    # Permitimos movimientos rápidos para "fijar" (Lock)
+                    LIMIT = 100.0 # Antes 12.0
+                    
+                    step_x = max(-LIMIT, min(LIMIT, step_x))
+                    step_y = max(-LIMIT, min(LIMIT, step_y))
+                    
+                    # Acumular residuos (Sub-pixel movement)
+                    self.accum_x += step_x
+                    self.accum_y += step_y
+                    
+                    move_x = int(self.accum_x)
+                    move_y = int(self.accum_y)
+                    
+                    self.accum_x -= move_x
+                    self.accum_y -= move_y
+                    
+                    if move_x != 0 or move_y != 0:
+                       mover_mouse_relativo(move_x, move_y)
+
+                # TRIGGER (Disparo)
+                if (x1 < mid < x2) and (y1 < mid < y2):
+                    self.accum_x = 0 
+                    self.accum_y = 0
+                    target_found = True
+
+        if debug and annotated_frame is not None:
+            cv2.imshow("IA VISION - ESC", annotated_frame)
+            cv2.waitKey(1)
+
+        return target_found
+
+# -----------------------------------------------------------------------------
+# CONTROL PRINCIPAL
+# -----------------------------------------------------------------------------
+EJECUTANDO = False
+PROGRAMA_ACTIVO = True
+DEBUG_VISUAL = True # Activado por defecto para probar
+
+def tarea_ia():
+    global EJECUTANDO
+    detector = DetectorIA()
+    print(f"\n[IA] Sistema Listo. FOV: {detector.fov_size}x{detector.fov_size}")
+    print("[IA] Ventana de visión abierta para depuración.")
+    
+    ultimo_disparo = 0
+    cooldown = 0.18 # Tiempo entre disparos
+    
+    while PROGRAMA_ACTIVO:
+        # SIEMPRE procesamos frame para ver la ventana
+        try:
+            start_time = time.time()
+            
+            # Buscar objetivo
+            # Pasar flag de debug
+            encontrado = detector.procesar_frame(debug=DEBUG_VISUAL)
+            
+            # Solo disparamos si está activado
+            if EJECUTANDO and encontrado and (time.time() - ultimo_disparo > cooldown):
+                disparo_tactico()
+                print(f"[DISPARO!] Enemigo detectado en la mira") 
+                ultimo_disparo = time.time()
+        except Exception as e:
+            print(f"Error frame: {e}")
+        
+        # Pequeña pausa para no quemar CPU si no hace falta
+        # Pequeña pausa SOLO si no está activo para salvar CPU
+        # Si está activo, corre a máximos FPS posibles
+        if not EJECUTANDO:
+            time.sleep(0.01)
+        else:
+            # Control de estabilidad (0.0ms delay = máxima velocidad)
+            pass
 
 def tarea_hotkeys():
     global EJECUTANDO, PROGRAMA_ACTIVO
-    n_presionada = False
+    print("\n[INFO] Mantén presionada la tecla 'Ñ' para activar.")
+    print("[INFO] Escribe 'salir' en la consola para cerrar.")
+    
     while PROGRAMA_ACTIVO:
+        # 0x8000 es el bit que indica si la tecla está presionada en este instante
         estado_n = user32.GetAsyncKeyState(VK_N_SPANISH)
-        if (estado_n & 0x8000) and not n_presionada:
-            n_presionada = True
-            EJECUTANDO = not EJECUTANDO
-            if EJECUTANDO:
-                print("\n[ON]")
-                winsound.Beep(1500, 50) 
-            else:
-                print("\n[OFF]")
-                winsound.Beep(500, 50)  
-        elif not (estado_n & 0x8000):
-            n_presionada = False
+        
+        if estado_n & 0x8000:
+            EJECUTANDO = True
+        else:
+            EJECUTANDO = False
+            
         time.sleep(0.01)
 
-def monitor_mouse():
-    print("\n--- MONITOR DE PRECISIÓN ---")
-    print("Mueve el mouse. [Ctrl+C] para salir.")
-    try:
-        while True:
-            x, y = pyautogui.position()
-            color = obtener_pixel_gdi(x, y)
-            match_txt = "NO"
-            if OBJETIVO_COLOR:
-                dist = calcular_distancia_color(color, OBJETIVO_COLOR)
-                if dist < TOLERANCIA: match_txt = f"SÍ (Dist: {dist:.1f})"
-            elif es_perfil_valorant(color[0], color[1], color[2]):
-                match_txt = "SÍ (Auto)"
-            print(f"\rMouse ({x}, {y}) RGB: {color} | Match: {match_txt}      ", end="")
-            time.sleep(0.05)
-    except KeyboardInterrupt:
-        print("\nMonitor finalizado.")
-
-def dibujar_guia(centro_x, centro_y):
-    print("\nDibujando PUNTO central...")
-    zona_y = centro_y + offset_actual
-    start = time.time()
-    while time.time() - start < 5:
-        dibujar_cuadro_rojo(centro_x, zona_y, RADIO_ESCANEO)
-        time.sleep(0.05)
-    print("Fin.\n")
-
-def prueba_input():
-    print("\n[TEST] 3 segundos para el chat...")
-    time.sleep(3)
-    for i in range(3):
-        presionar_9_tap()
-        time.sleep(0.1)
-    print("Hecho.")
-
 def iniciar():
-    global EJECUTANDO, SONIDO_ACTIVADO, OBJETIVO_COLOR, offset_actual, TOLERANCIA, PROGRAMA_ACTIVO
+    global PROGRAMA_ACTIVO
     os.system('cls' if os.name == 'nt' else 'clear')
-    try: es_admin = ctypes.windll.shell32.IsUserAnAdmin()
-    except: es_admin = False
     
-    if not es_admin: print("\n[!] ADVERTENCIA: EJECUTA COMO ADMINISTRADOR [!]\n")
-
-    ancho, alto = pyautogui.size()
-    cx, cy = ancho // 2, alto // 2
-
-    print(f"=== VERSIÓN 21 (SNIPER MODE / PRECISIÓN) ===")
-    print(f"Resolución: {ancho}x{alto}")
-    print("Comandos: on, test, monitor, magenta, c, salir")
-    print("TECLA MAESTRA: 'Ñ' para activar/desactivar en partida.")
-
-    hilo_teclas = threading.Thread(target=tarea_hotkeys)
-    hilo_teclas.daemon = True
-    hilo_teclas.start()
-
-    hilo_escaneo = threading.Thread(target=tarea_escanear, args=(cx, cy))
-    hilo_escaneo.daemon = True
-    hilo_escaneo.start()
-
+    print("=== AUTO TRIGGER IA (YOLOv8) ===")
+    
+    # Iniciar hilos
+    t_keys = threading.Thread(target=tarea_hotkeys)
+    t_keys.daemon = True
+    t_keys.start()
+    
+    t_ia = threading.Thread(target=tarea_ia)
+    t_ia.daemon = True
+    t_ia.start()
+    
+    # Loop principal para comandos de consola
     while True:
         try:
-            cmd = input(f">> ").strip().lower()
-            
+            cmd = input().strip().lower()
             if cmd == "salir":
                 PROGRAMA_ACTIVO = False
-                EJECUTANDO = False
                 break
-            elif cmd == "test":
-                prueba_input()
-            elif cmd == "monitor":
-                monitor_mouse()
-            elif cmd == "dibujar":
-                dibujar_guia(cx, cy)
-            elif cmd == "magenta":
-                OBJETIVO_COLOR = (255, 0, 255)
-                offset_actual = 0 
-                TOLERANCIA = 60 # Un poco más relajado para pruebas sintéticas
-                print("Modo Prueba Fucsia activado.")
-            elif cmd == "c":
-                print("Pon mouse en color (3s)...")
-                time.sleep(3)
-                px = pyautogui.position()
-                OBJETIVO_COLOR = obtener_pixel_gdi(px[0], px[1])
-                offset_actual = 0
-                TOLERANCIA = 55 # Tolerancia ajustada a 55 para calibración manual
-                print(f"Calibrado: {OBJETIVO_COLOR} (Tolerancia: {TOLERANCIA})")
-            elif cmd == "on":
-                EJECUTANDO = True
-                print("ACTIVADO.")
-            elif cmd == "off":
-                EJECUTANDO = False
-                print("PAUSADO.")
-        except Exception as e: print(e)
+        except:
+            break
 
 if __name__ == "__main__":
     iniciar()
