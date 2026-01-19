@@ -1,5 +1,10 @@
 package Progtema5;
-
+/*
+Clase que reresenta un disco musical
+La informacion que incorpora esta compuesta de su titulo y numero de
+cortes que lo compone; tambien, como referencia, su precio de compra y la fecha en que se adquirio (usamos la 
+clase fecha, creada anteriormente).
+ */
 class Disco {
 
     private String titulo;

@@ -4,6 +4,7 @@ public class Progtema5_3_objeto {
     public static void main(String[] args){
         trabajador t1 = new trabajador(1, "Juan Perez", 'C', 'N', 2, 5);
 
+        /* Trabajador 1 */
         System.out.println(t1.obtenerDatos());
 
         System.out.printf("Nómina a percibir: %.2f euros\n\n", t1.calcularNomina());
@@ -16,6 +17,8 @@ public class Progtema5_3_objeto {
         
 
         System.out.printf("Nueva nómina a percibir: %.2f euros\n", t1.calcularNomina());
+
+
     }
 }
     
