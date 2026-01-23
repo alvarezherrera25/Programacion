@@ -1,9 +1,8 @@
 package Progtema5;
 
 class Empleado {
- private String nombre;
- private int numero_empleado;
-
+    private String nombre;
+    private int numero_empleado;
 
     public Empleado(){
     }   
@@ -24,8 +23,7 @@ class Empleado {
         this.numero_empleado = numero_empleado;
     }
 
-
     public String verDatos(){
-       return "Nombre: " + nombre + " | Numero de empleado: " + numero_empleado ;
+       return "Ficha completa -> Nombre: " + nombre + " | Numero: " + numero_empleado;
     }
 }
