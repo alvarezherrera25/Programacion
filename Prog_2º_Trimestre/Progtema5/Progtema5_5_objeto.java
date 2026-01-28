@@ -6,7 +6,7 @@ public class Progtema5_5_objeto {
         Indicador miIndicador = new Indicador(0);
         // 2. Imprimir valor inicial
         miIndicador.imprimirValor();
-        // 3. Modificar a un valor fijo (ej. 100)
+        // 3. Modificar a un valor fijo
         System.out.println("---------------------------------------");
         System.out.println("Cambiar valor a 100");
         miIndicador.cambiarValor(100);

@@ -11,16 +11,16 @@ class Indicador {
     public void imprimirValor(){
         System.out.println("Valor actual del indicardor: " + this.valor);
     }
-    // Método para cambiar el valor directamente (set)
+    // Método para cambiar el valor directamente
     public void cambiarValor(double nuevoValor){
         this.valor = nuevoValor;
     }
     // Método para sumar al valor actual
     public void incrementar(double cantidad){
-        this.valor = this.valor + cantidad;
+        this.valor += cantidad;
     }
     // Método para restar al valor actual
     public void disminuir(double cantidad){
-        this.valor = this.valor - cantidad;
+        this.valor -= cantidad;
     }
 }
