@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mejorador PRO - Super Resolution HD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        header {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .main-content { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
+        .controls {
+            background: #12121a;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+        .upload-area {
+            border: 2px dashed rgba(0,212,255,0.4);
+            padding: 25px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .upload-area:hover { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
+        .upload-area input { display: none; }
+        .control-group {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .control-group h3 {
+            font-size: 0.85rem;
+            color: #00d4ff;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .slider { margin-bottom: 10px; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .slider input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #2a2a3e;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+        .slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .preset-btn {
+            padding: 10px;
+            background: #2a2a3e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .preset-btn:hover {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        .checkbox-item input { accent-color: #00d4ff; }
+        .scale-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .scale-btn {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a3e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .scale-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+            border-color: transparent;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,212,255,0.4); }
+        .btn-secondary {
+            background: #2a2a3e;
+            color: #ccc;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #0a0a0f;
+        }
+        .workspace {
+            background: #12121a;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .canvas-box {
+            background: #1a1a2e;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .canvas-box h4 {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .canvas-box canvas {
+            width: 100%;
+            border-radius: 6px;
+            background: #0a0a0f;
+        }
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #555;
+        }
+        .info-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 12px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .info-item { text-align: center; }
+        .info-item label { display: block; color: #666; margin-bottom: 3px; }
+        .info-item span { color: #00d4ff; font-weight: 600; }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loading.active { display: flex; }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 15px; color: #00d4ff; }
+        @media (max-width: 1000px) {
+            .main-content { grid-template-columns: 1fr; }
+            .canvas-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Procesando...</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>✨ Mejorador PRO - Super Resolution HD</h1>
+            <p style="color: #888; font-size: 0.9rem;">Mejora profesional de imágenes</p>
+        </header>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📁</div>
+                    <p>Arrastra tu imagen aquí</p>
+                    <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">PNG, JPG, WebP</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>📐 Escala</h3>
+                    <div class="scale-btns">
+                        <button class="scale-btn active" data-scale="1">1x</button>
+                        <button class="scale-btn" data-scale="2">2x</button>
+                        <button class="scale-btn" data-scale="4">4x</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎨 Presets</h3>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="applyPreset('ultra')">🌟 Ultra HD</button>
+                        <button class="preset-btn" onclick="applyPreset('cinema')">🎬 Cinema</button>
+                        <button class="preset-btn" onclick="applyPreset('portrait')">👤 Portrait</button>
+                        <button class="preset-btn" onclick="applyPreset('land')">🏔️ Landscape</button>
+                        <button class="preset-btn" onclick="applyPreset('vintage')">🎞️ Vintage</button>
+                        <button class="preset-btn" onclick="applyPreset('bw')">⚫ B&N</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>⚡ Auto Mejoras</h3>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" id="autoWB" checked><span>WB</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="autoExp" checked><span>Exp</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="autoContrast" checked><span>HD</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="autoSharpen" checked><span>Sharp</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="autoDenoise" checked><span>Noise</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="autoColor" checked><span>Color</span></label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎛️ Exposición</h3>
+                    <div class="slider"><label>Exposición <span id="expVal">0</span></label><input type="range" id="exposure" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Contraste <span id="contVal">0</span></label><input type="range" id="contrast" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Brillo <span id="brightVal">0</span></label><input type="range" id="brightness" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Sombras <span id="shadowVal">0</span></label><input type="range" id="shadows" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Highlights <span id="highVal">0</span></label><input type="range" id="highlights" min="-100" max="100" value="0"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🌈 Color</h3>
+                    <div class="slider"><label>Saturación <span id="satVal">0</span></label><input type="range" id="saturation" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Temp <span id="tempVal">0</span></label><input type="range" id="temp" min="-100" max="100" value="0"></div>
+                    <div class="slider"><label>Vivacidad <span id="vibVal">0</span></label><input type="range" id="vibrance" min="-100" max="100" value="0"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🔍 Detail</h3>
+                    <div class="slider"><label>Nitidez <span id="sharpVal">50</span></label><input type="range" id="sharpness" min="0" max="100" value="50"></div>
+                    <div class="slider"><label>Estructura <span id="structVal">25</span></label><input type="range" id="structure" min="0" max="100" value="25"></div>
+                    <div class="slider"><label>Desnoise <span id="noiseVal">20</span></label><input type="range" id="denoise" min="0" max="100" value="20"></div>
+                    <div class="slider"><label>Viñeta <span id="vigVal">0</span></label><input type="range" id="vignette" min="0" max="100" value="0"></div>
+                </div>
+
+                <button class="btn btn-primary" id="applyBtn">✨ Mejorar Imagen</button>
+                <button class="btn btn-secondary" id="resetBtn">↺ Restablecer</button>
+                <button class="btn btn-success" id="downloadBtn" style="display:none;">💾 Descargar</button>
+            </div>
+
+            <div class="workspace">
+                <div class="canvas-grid">
+                    <div class="canvas-box">
+                        <h4>📷 Original</h4>
+                        <div class="placeholder" id="origPlace">Tu imagen</div>
+                        <canvas id="origCanvas" style="display:none;"></canvas>
+                    </div>
+                    <div class="canvas-box">
+                        <h4>✨ Mejorada</h4>
+                        <div class="placeholder" id="resPlace">Resultado</div>
+                        <canvas id="resCanvas" style="display:none;"></canvas>
+                    </div>
+                </div>
+                <div class="info-bar">
+                    <div class="info-item"><label>Dimensiones</label><span id="dims">-</span></div>
+                    <div class="info-item"><label>Escala</label><span id="scaleDisp">1x</span></div>
+                    <div class="info-item"><label>Mejora</label><span id="enhance">-</span></div>
+                    <div class="info-item"><label>Puntos</label><span id="score">-</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== PRO IMAGE PROCESSING ENGINE ====================
+        class ProImageProcessor {
+            constructor() {
+                this.scale = 1;
+                this.origWidth = 0;
+                this.origHeight = 0;
+            }
+
+            // Safe clamp
+            clamp(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+
+            // Simple white balance
+            autoWB(data) {
+                let r = 0, g = 0, b = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    r += data[i]; g += data[i+1]; b += data[i+2];
+                }
+                const c = data.length / 4;
+                r /= c; g /= c; b /= c;
+                const gray = (r + g + b) / 3;
+                const sr = gray / Math.max(r, 1);
+                const sg = gray / Math.max(g, 1);
+                const sb = gray / Math.max(b, 1);
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = this.clamp(data[i] * sr);
+                    res[i+1] = this.clamp(data[i+1] * sg);
+                    res[i+2] = this.clamp(data[i+2] * sb);
+                }
+                return res;
+            }
+
+            // Simple contrast enhancement
+            autoContrast(data) {
+                let min = 255, max = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                    min = Math.min(min, gray);
+                    max = Math.max(max, gray);
+                }
+                const range = max - min || 1;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    for (let c = 0; c < 3; c++) {
+                        res[i+c] = this.clamp(((data[i+c] - min) / range) * 255);
+                    }
+                }
+                return res;
+            }
+
+            // Exposure
+            exposure(data, val) {
+                const factor = val / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    for (let c = 0; c < 3; c++) {
+                        res[i+c] = this.clamp(data[i+c] + factor * 50);
+                    }
+                }
+                return res;
+            }
+
+            // Contrast
+            contrast(data, val) {
+                const factor = (val + 100) / 200;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = this.clamp((data[i] - 128) * factor + 128);
+                    res[i+1] = this.clamp((data[i+1] - 128) * factor + 128);
+                    res[i+2] = this.clamp((data[i+2] - 128) * factor + 128);
+                }
+                return res;
+            }
+
+            // Brightness
+            brightness(data, val) {
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = this.clamp(data[i] + val);
+                    res[i+1] = this.clamp(data[i+1] + val);
+                    res[i+2] = this.clamp(data[i+2] + val);
+                }
+                return res;
+            }
+
+            // Shadows
+            shadows(data, val) {
+                const factor = val / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                    if (gray < 128) {
+                        const boost = 1 + factor * (1 - gray / 128);
+                        res[i] = this.clamp(data[i] * boost);
+                        res[i+1] = this.clamp(data[i+1] * boost);
+                        res[i+2] = this.clamp(data[i+2] * boost);
+                    } else {
+                        res[i] = data[i]; res[i+1] = data[i+1]; res[i+2] = data[i+2];
+                    }
+                }
+                return res;
+            }
+
+            // Highlights
+            highlights(data, val) {
+                const factor = val / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                    if (gray > 128) {
+                        const boost = 1 + factor * ((gray - 128) / 128);
+                        res[i] = this.clamp(data[i] * boost);
+                        res[i+1] = this.clamp(data[i+1] * boost);
+                        res[i+2] = this.clamp(data[i+2] * boost);
+                    } else {
+                        res[i] = data[i]; res[i+1] = data[i+1]; res[i+2] = data[i+2];
+                    }
+                }
+                return res;
+            }
+
+            // Saturation
+            saturation(data, val) {
+                const factor = 1 + val / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                    res[i] = this.clamp(gray + factor * (data[i] - gray));
+                    res[i+1] = this.clamp(gray + factor * (data[i+1] - gray));
+                    res[i+2] = this.clamp(gray + factor * (data[i+2] - gray));
+                }
+                return res;
+            }
+
+            // Vibrance (smart saturation)
+            vibrance(data, val) {
+                const factor = val / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                    const maxC = Math.max(data[i], data[i+1], data[i+2]);
+                    const sat = maxC === 0 ? 0 : (maxC - gray) / maxC;
+                    const vf = 1 + factor * (1 - sat) * 0.5;
+                    res[i] = this.clamp(gray + vf * (data[i] - gray));
+                    res[i+1] = this.clamp(gray + vf * (data[i+1] - gray));
+                    res[i+2] = this.clamp(gray + vf * (data[i+2] - gray));
+                }
+                return res;
+            }
+
+            // Temperature
+            temperature(data, val) {
+                const t = val / 100 * 20;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = this.clamp(data[i] + t);
+                    res[i+1] = data[i+1];
+                    res[i+2] = this.clamp(data[i+2] - t);
+                }
+                return res;
+            }
+
+            // Bilinear upscale (simpler and faster)
+            bilinearScale(data, w, h, scale) {
+                if (scale === 1) return { data, w, h };
+                const nw = Math.floor(w * scale), nh = Math.floor(h * scale);
+                const res = new Uint8ClampedArray(nw * nh * 4);
+                const rx = w / nw, ry = h / nh;
+                for (let y = 0; y < nh; y++) {
+                    for (let x = 0; x < nw; x++) {
+                        const sx = x * rx, sy = y * ry;
+                        const x0 = Math.floor(sx), y0 = Math.floor(sy);
+                        const x1 = Math.min(x0 + 1, w - 1), y1 = Math.min(y0 + 1, h - 1);
+                        const fx = sx - x0, fy = sy - y0;
+                        for (let c = 0; c < 4; c++) {
+                            const i00 = (y0 * w + x0) * 4 + c;
+                            const i01 = (y0 * w + x1) * 4 + c;
+                            const i10 = (y1 * w + x0) * 4 + c;
+                            const i11 = (y1 * w + x1) * 4 + c;
+                            const val = data[i00] * (1-fx)*(1-fy) + data[i01] * fx*(1-fy) + data[i10] * (1-fx)*fy + data[i11] * fx*fy;
+                            res[(y * nw + x) * 4 + c] = c < 3 ? this.clamp(val) : 255;
+                        }
+                    }
+                }
+                return { data: res, w: nw, h: nh };
+            }
+
+            // Simple box blur
+            boxBlur(data, w, h, radius) {
+                const res = new Uint8ClampedArray(data.length);
+                const size = radius * 2 + 1;
+                const div = size * size;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let rr = 0, gg = 0, bb = 0;
+                        for (let ky = -radius; ky <= radius; ky++) {
+                            for (let kx = -radius; kx <= radius; kx++) {
+                                const px = Math.min(Math.max(x + kx, 0), w - 1);
+                                const py = Math.min(Math.max(y + ky, 0), h - 1);
+                                const i = (py * w + px) * 4;
+                                rr += data[i]; gg += data[i+1]; bb += data[i+2];
+                            }
+                        }
+                        const ii = (y * w + x) * 4;
+                        res[ii] = rr / div; res[ii+1] = gg / div; res[ii+2] = bb / div; res[ii+3] = data[ii+3];
+                    }
+                }
+                return res;
+            }
+
+            // Sharpening
+            sharpen(data, w, h, amount) {
+                const blur = this.boxBlur(data, w, h, 1);
+                const factor = amount / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = this.clamp(data[i] + (data[i] - blur[i]) * factor);
+                    res[i+1] = this.clamp(data[i+1] + (data[i+1] - blur[i+1]) * factor);
+                    res[i+2] = this.clamp(data[i+2] + (data[i+2] - blur[i+2]) * factor);
+                }
+                return res;
+            }
+
+            // Structure enhancement
+            structure(data, w, h, amount) {
+                const blur = this.boxBlur(data, w, h, 2);
+                const factor = amount / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    const lum = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+                    const bl = 0.299*blur[i] + 0.587*blur[i+1] + 0.114*blur[i+2];
+                    const s = (lum - bl) * factor;
+                    res[i] = this.clamp(data[i] + s);
+                    res[i+1] = this.clamp(data[i+1] + s);
+                    res[i+2] = this.clamp(data[i+2] + s);
+                }
+                return res;
+            }
+
+            // Denoise
+            denoise(data, w, h, amount) {
+                const blur = this.boxBlur(data, w, h, 1);
+                const factor = amount / 100;
+                const res = new Uint8ClampedArray(data);
+                for (let i = 0; i < data.length; i += 4) {
+                    res[i] = data[i] * (1-factor) + blur[i] * factor;
+                    res[i+1] = data[i+1] * (1-factor) + blur[i+1] * factor;
+                    res[i+2] = data[i+2] * (1-factor) + blur[i+2] * factor;
+                }
+                return res;
+            }
+
+            // Vignette
+            vignette(data, w, h, amount) {
+                const res = new Uint8ClampedArray(data);
+                const cx = w / 2, cy = h / 2, max = Math.sqrt(cx*cx + cy*cy);
+                const f = amount / 100;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const d = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy)) / max;
+                        const factor = Math.max(0, 1 - Math.pow(d, 2) * f);
+                        const i = (y * w + x) * 4;
+                        res[i] = this.clamp(data[i] * factor);
+                        res[i+1] = this.clamp(data[i+1] * factor);
+                        res[i+2] = this.clamp(data[i+2] * factor);
+                    }
+                }
+                return res;
+            }
+
+            // Main processing
+            process(data, w, h, opts) {
+                let res = new Uint8ClampedArray(data);
+                let cw = w, ch = h;
+
+                if (opts.autoWB) res = this.autoWB(res);
+                if (opts.autoContrast) res = this.autoContrast(res);
+                if (opts.autoColor) {
+                    res = this.saturation(res, 15);
+                    res = this.vibrance(res, 10);
+                }
+
+                res = this.exposure(res, opts.exposure);
+                res = this.contrast(res, opts.contrast);
+                res = this.brightness(res, opts.brightness);
+                res = this.shadows(res, opts.shadows);
+                res = this.highlights(res, opts.highlights);
+                res = this.saturation(res, opts.saturation);
+                res = this.vibrance(res, opts.vibrance);
+                res = this.temperature(res, opts.temp);
+
+                if (this.scale > 1) {
+                    const sc = this.bilinearScale(res, cw, ch, this.scale);
+                    res = sc.data; cw = sc.w; ch = sc.h;
+                }
+
+                const noiseVal = opts.autoDenoise ? 20 : opts.denoise;
+                if (noiseVal > 0) res = this.denoise(res, cw, ch, noiseVal);
+                if (opts.structure > 0) res = this.structure(res, cw, ch, opts.structure);
+
+                const sharpVal = opts.autoSharpen ? 50 : opts.sharpness;
+                if (sharpVal > 0) res = this.sharpen(res, cw, ch, sharpVal * 0.6);
+
+                if (opts.vignette > 0) res = this.vignette(res, cw, ch, opts.vignette);
+
+                return { data: res, w: cw, h: ch };
+            }
+        }
+
+        // ==================== UI CONTROLLER ====================
+        const proc = new ProImageProcessor();
+        let originalData = null;
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const origCanvas = document.getElementById('origCanvas');
+        const resCanvas = document.getElementById('resCanvas');
+        const origPlace = document.getElementById('origPlace');
+        const resPlace = document.getElementById('resPlace');
+        const loading = document.getElementById('loading');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#00d4ff'; });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = 'rgba(0,212,255,0.4)'; });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(0,212,255,0.4)';
+            if (e.dataTransfer.files[0]) loadImg(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) loadImg(e.target.files[0]); });
+
+        document.querySelectorAll('input[type="range"]').forEach(s => {
+            s.addEventListener('input', () => {
+                const disp = document.getElementById(s.id.charAt(0).toUpperCase() + s.id.slice(1) + 'Val') || 
+                            document.getElementById(s.id.charAt(0).toUpperCase() + s.id.slice(1, -1) + 'Val') ||
+                            document.getElementById(s.id + 'Val');
+                if (disp) disp.textContent = s.value;
+            });
+        });
+
+        document.querySelectorAll('.scale-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                document.querySelectorAll('.scale-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                proc.scale = parseInt(b.dataset.scale);
+                document.getElementById('scaleDisp').textContent = proc.scale + 'x';
+            });
+        });
+
+        function loadImg(file) {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = origCanvas.getContext('2d');
+                origCanvas.width = img.width;
+                origCanvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                originalData = ctx.getImageData(0, 0, img.width, img.height).data;
+                proc.origWidth = img.width;
+                proc.origHeight = img.height;
+                origPlace.style.display = 'none';
+                origCanvas.style.display = 'block';
+                document.getElementById('dims').textContent = img.width + 'x' + img.height;
+                enhance();
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        function getOptions() {
+            return {
+                autoWB: document.getElementById('autoWB').checked,
+                autoContrast: document.getElementById('autoContrast').checked,
+                autoSharpen: document.getElementById('autoSharpen').checked,
+                autoDenoise: document.getElementById('autoDenoise').checked,
+                autoColor: document.getElementById('autoColor').checked,
+                exposure: parseInt(document.getElementById('exposure').value),
+                contrast: parseInt(document.getElementById('contrast').value),
+                brightness: parseInt(document.getElementById('brightness').value),
+                shadows: parseInt(document.getElementById('shadows').value),
+                highlights: parseInt(document.getElementById('highlights').value),
+                saturation: parseInt(document.getElementById('saturation').value),
+                vibrance: parseInt(document.getElementById('vibrance').value),
+                temp: parseInt(document.getElementById('temp').value),
+                sharpness: parseInt(document.getElementById('sharpness').value),
+                structure: parseInt(document.getElementById('structure').value),
+                denoise: parseInt(document.getElementById('denoise').value),
+                vignette: parseInt(document.getElementById('vignette').value)
+            };
+        }
+
+        function enhance() {
+            if (!originalData) { alert('Carga una imagen primero'); return; }
+            loading.classList.add('active');
+            
+            setTimeout(() => {
+                try {
+                    const res = proc.process(originalData, proc.origWidth, proc.origHeight, getOptions());
+                    const ctx = resCanvas.getContext('2d');
+                    resCanvas.width = res.w;
+                    resCanvas.height = res.h;
+                    ctx.putImageData(new ImageData(res.data, res.w, res.h), 0, 0);
+                    
+                    resPlace.style.display = 'none';
+                    resCanvas.style.display = 'block';
+                    document.getElementById('downloadBtn').style.display = 'block';
+                    
+                    const score = calcQuality(res.data);
+                    document.getElementById('score').textContent = score + '/100';
+                    document.getElementById('enhance').textContent = '+' + Math.round(score - 50) + '%';
+                } catch (e) {
+                    console.error(e);
+                    alert('Error procesando imagen: ' + e.message);
+                }
+                loading.classList.remove('active');
+            }, 50);
+        }
+
+        function reset() {
+            document.querySelectorAll('input[type="range"]').forEach(s => {
+                const def = { exposure:0, contrast:0, brightness:0, shadows:0, highlights:0, saturation:0, vibrance:0, temp:0, sharpness:50, structure:25, denoise:20, vignette:0 };
+                s.value = def[s.id] !== undefined ? def[s.id] : 0;
+                const disp = document.getElementById(s.id.charAt(0).toUpperCase() + s.id.slice(1) + 'Val');
+                if (disp) disp.textContent = s.value;
+            });
+            document.querySelectorAll('.scale-btn').forEach(x => x.classList.remove('active'));
+            document.querySelector('.scale-btn[data-scale="1"]').classList.add('active');
+            proc.scale = 1;
+            document.getElementById('scaleDisp').textContent = '1x';
+            if (originalData) enhance();
+        }
+
+        function calcQuality(data) {
+            let min = 255, max = 0, sat = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                min = Math.min(min, gray);
+                max = Math.max(max, gray);
+                sat += Math.max(Math.abs(data[i]-gray), Math.abs(data[i+1]-gray), Math.abs(data[i+2]-gray));
+            }
+            const range = max - min;
+            const avgSat = sat / (data.length / 4);
+            return Math.min(100, Math.round(50 + range/8 + avgSat/12));
+        }
+
+        function applyPreset(p) {
+            const presets = {
+                ultra: { exp:5, cont:15, sat:20, vib:25, sharp:70, struct:40, vig:15 },
+                cinema: { exp:-5, cont:20, sat:5, vib:10, sharp:50, struct:30, vig:40, temp:-10 },
+                portrait: { exp:0, cont:10, sat:10, vib:30, sharp:60, struct:20, vig:25 },
+                land: { exp:10, cont:15, sat:25, vib:35, sharp:55, struct:35, vig:10 },
+                vintage: { exp:10, cont:-10, sat:-20, vib:0, sharp:30, struct:10, vig:35, temp:20 },
+                bw: { exp:0, cont:15, sat:-100, vib:0, sharp:45, struct:25, vig:20 }
+            };
+            const pset = presets[p];
+            if (!pset) return;
+            const fields = ['exposure', 'contrast', 'saturation', 'vibrance', 'sharpness', 'structure', 'vignette', 'temp'];
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                if (el && pset[f] !== undefined) el.value = pset[f];
+                const disp = document.getElementById(f.charAt(0).toUpperCase() + f.slice(1) + 'Val');
+                if (disp) disp.textContent = el ? el.value : '0';
+            });
+            enhance();
+        }
+
+        document.getElementById('applyBtn').addEventListener('click', enhance);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'imagen_mejorada.png';
+            link.href = resCanvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+</body>
+</html>

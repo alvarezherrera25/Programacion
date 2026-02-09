@@ -24,7 +24,6 @@ public class Progtema5_2_objeto {
         int numero_empleado1 = sc.nextInt();
         empleado1.setnumero_empleado(numero_empleado1);
         
-        // 3. CORRECCIÓN IMPORTANTE: Limpiar el buffer
         sc.nextLine(); 
 
         // --- Empleado 2 ---
@@ -36,8 +35,6 @@ public class Progtema5_2_objeto {
         int numero_empleado2 = sc.nextInt();
         empleado2.setnumero_empleado(numero_empleado2);
         
-        // No cerramos el Scanner aquí si vamos a usarlo en otros lados, 
-        // pero como es el final de la lectura, está bien.
     }
 
     public static void verDatos(Empleado empleado1, Empleado empleado2) {
