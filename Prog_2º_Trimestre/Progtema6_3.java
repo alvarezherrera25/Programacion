@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 public class Progtema6_3 {
     public static void main (String[] args) {
         int[] numero =  new int [10];
