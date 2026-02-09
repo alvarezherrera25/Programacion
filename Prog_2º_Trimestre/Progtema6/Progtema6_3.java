@@ -1,4 +1,5 @@
 public class Progtema6_3 {
+    //*so */
     public static void main (String[] args) {
         int[] numero =  new int [10];
         System.out.println("Numero: ");
