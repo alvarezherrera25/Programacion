@@ -1,24 +1,28 @@
-
 public class Progtema6_7_objeto {
-    
     public static void main(String[] args) {
-        // 1. Creamos el vector para 50 empleados
-        Empleado[] lista = new Empleado[50];
-        String[] nombres = {"Carlos", "Sonia", "Raúl", "Beatriz", "Jorge", "Alicia"};
+        Conjunto A = new Conjunto();
+        
+        // Probamos agregar
+        A.agregar(5); A.agregar(10); A.agregar(10); A.agregar(15);
+        System.out.print("A: "); A.imprimir();
 
-        // 2. Rellenamos el vector
-        for (int i = 0; i < lista.length; i++) {
-            lista[i] = new Empleado();
-            
-            int nomAleatorio = (int) (Math.random() * nombres.length);
-            lista[i].setnombre(nombres[nomAleatorio]);
-            
-            lista[i].setnumero_empleado(i + 1);
-        }
+        // Probamos esMiembro
+        System.out.println("¿Está el 10? " + A.esMiembro(10));
 
-        // 3. Mostramos los resultados
-        for (int i = 0; i < lista.length; i++) {
-            System.out.println(lista[i].verDatos());
-        }
+        // Probamos copiar
+        Conjunto B = new Conjunto();
+        B.copiar(A);
+        System.out.print("B (copia): "); B.imprimir();
+
+        // Probamos eliminar
+        A.eliminar(10);
+        System.out.print("A sin 10: "); A.imprimir();
+
+        // Probamos esIgual
+        System.out.println("¿A == B? " + A.esIgual(B));
+
+        // Probamos vaciar
+        A.vaciar();
+        System.out.print("A vacio: "); A.imprimir();
     }
 }
