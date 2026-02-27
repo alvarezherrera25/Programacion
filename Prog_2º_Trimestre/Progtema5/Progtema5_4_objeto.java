@@ -6,30 +6,28 @@ public class Progtema5_4_objeto {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // 1. Creamos las cuentas por separado
-        CuentaCorriente c1 = new CuentaCorriente("Juan", 1000, "12345678");
-        CuentaCorriente c2 = new CuentaCorriente("Maria", 2000, "87654321");
+        CuentaCorriente c1 = new CuentaCorriente("Ana", 1000.0, "12345678");
+        CuentaCorriente c2 = new CuentaCorriente("Luis", 500.0, "87654321");
 
-        System.out.print("Introduce tu codigo de 8 digitos: ");
-        String clave = sc.nextLine();
+        System.out.println("Cambiando el código de la cuenta de Luis...");
+        String codigoPropuesto = "12345678"; 
 
-        // 2. Comparamos uno por uno
-        if (clave.equals(c1.codigo)) {
-            System.out.println("Titular: " + c1.titular + " | Saldo: " + c1.saldo);
-            System.out.print("Cantidad a ingresar: ");
-            c1.IngresarDinero(sc.nextDouble());
-            System.out.print("Cantidad a retirar: ");
-            c1.RetirarDinero(sc.nextDouble());
-        } 
-        else if (clave.equals(c2.codigo)) {
-            System.out.println("Titular: " + c2.titular + " | Saldo: " + c2.saldo);
-            System.out.print("Cantidad a ingresar: ");
-            c2.IngresarDinero(sc.nextDouble());
-            System.out.print("Cantidad a retirar: ");
-            c2.RetirarDinero(sc.nextDouble());
-        } 
-        else {
-            System.out.println("Acceso denegado: El codigo no coincide con ninguna cuenta.");
+        if (codigoPropuesto.equals(c1.codigo)) {
+            System.out.println("ERROR: No se puede cambiar el código. El código " + codigoPropuesto + " ya pertenece a la cuenta de " + c1.titular);
+        } else {
+            c2.codigo = codigoPropuesto;
+            System.out.println("Código actualizado con éxito.");
+        }
+
+        System.out.print("\nIngrese el código de la cuenta a la que desea entrar: ");
+        String login = sc.nextLine();
+
+        if (login.equals(c1.codigo)) {
+            System.out.println("Bienvenida, Ana. Tu saldo es: " + c1.saldo);
+        } else if (login.equals(c2.codigo)) {
+            System.out.println("Bienvenido, Luis. Tu saldo es: " + c2.saldo);
+        } else {
+            System.out.println("Acceso denegado: Código no encontrado.");
         }
     }
 }
