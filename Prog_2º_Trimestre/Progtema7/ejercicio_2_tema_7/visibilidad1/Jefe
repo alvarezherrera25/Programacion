@@ -1,0 +1,25 @@
+package visibilidad1;
+import visibilidad2.EmpleadoEspecial; // Necesario para la prueba 3
+
+// En Jefe (Prueba 1): Como estás en el mismo paquete que el padre, puedes ver casi todo. Solo el private se queda fuera.
+
+//En Jefe con el objeto (Prueba 3): Al usar un objeto de otra clase sin heredar de ella, pierdes los privilegios de protected. Solo lo public es accesible.
+
+public class Jefe extends Empleado {
+    
+    public Jefe() {
+        // --- PRUEBA 1: Uso de "super" (Mismo paquete) ---
+        System.out.println(super.edad);      // OK: Es public
+        System.out.println(super.direccion); // OK: Es protected (mismo paquete)
+        System.out.println(super.nombre);    // OK: Es default (mismo paquete)
+        // System.out.println(super.sueldo); // ERROR: Es private, solo visible en Empleado
+        
+        // --- PRUEBA 3: Instancia de EmpleadoEspecial ---
+        EmpleadoEspecial objetoEE = new EmpleadoEspecial();
+        
+        System.out.println(objetoEE.nombreEs); // OK: Es public
+        // System.out.println(objetoEE.direccionEs); // ERROR: Es protected y Jefe NO hereda de EmpleadoEspecial
+        // System.out.println(objetoEE.edad);        // ERROR: Es default y estamos en paquetes distintos
+        // System.out.println(objetoEE.sueldoEs);    // ERROR: Es private
+    }
+}

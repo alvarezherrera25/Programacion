@@ -1,0 +1,17 @@
+package visibilidad1;
+import visibilidad2.EmpleadoEspecial;
+
+//En JefeEspecial (Prueba 2): Al estar en paquetes diferentes, el modificador protected es la estrella: te permite ver direccionEs porque eres 
+// su "hijo", pero no te deja ver edad porque el acceso por defecto (default) muere al salir del paquete.
+
+public class JefeEspecial extends EmpleadoEspecial {
+    
+    public JefeEspecial() {
+        // --- PRUEBA 2: Uso de "super" (Distinto paquete con herencia) ---
+        System.out.println(super.nombreEs);    // OK: Es public
+        System.out.println(super.direccionEs); // OK: Aunque es otro paquete, protected permite acceso por HERENCIA
+        
+        // System.out.println(super.edad);     // ERROR: Es default, solo se ve en visibilidad2
+        // System.out.println(super.sueldoEs); // ERROR: Es private
+    }
+}

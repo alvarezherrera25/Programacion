@@ -1,0 +1,8 @@
+package visibilidad1;
+
+public class Empleado {
+    private int sueldo = 1000;
+    String nombre = "Juan"; // Acceso por defecto (Package)
+    protected String direccion = "Calle Mayor";
+    public int edad = 30;
+}

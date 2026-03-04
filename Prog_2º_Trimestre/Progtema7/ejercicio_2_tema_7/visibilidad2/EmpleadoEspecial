@@ -1,0 +1,8 @@
+package visibilidad2;
+
+public class EmpleadoEspecial {
+    public String nombreEs = "Público";
+    private float sueldoEs = 1000.0f;
+    protected String direccionEs = "Protegida";
+    int edad = 25; // Acceso por defecto (Package)
+}

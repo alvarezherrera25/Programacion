@@ -1,3 +1,4 @@
+package basurita;
 import java.util.Scanner;
 
 public class prueba_array {
