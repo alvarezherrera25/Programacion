@@ -1,6 +1,6 @@
 package Progtema7.ejercicio_5_tema_7;
 
-abstract class Personal {
+public abstract class Personal {
     
     // 6. DECLARAR ATRIBUTO ABSTRACTO
     // ERROR: En Java NO existen los atributos abstractos. 
