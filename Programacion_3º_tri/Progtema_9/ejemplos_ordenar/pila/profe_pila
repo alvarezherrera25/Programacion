@@ -1,0 +1,15 @@
+public class Pila{
+    public static in MAXIMO=100;
+    public Elemento[] v;
+    private int cima;
+    public Pila (int capacidad){
+        fi(capacidad <= 0){
+            throw new IllegalArgumentException();
+        }
+        v = new Elemento (capacidad);
+        cima = 0;
+    }
+    public pila(){
+        this.MAXIMO; 
+    }
+}

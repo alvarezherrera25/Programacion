@@ -8,7 +8,7 @@ public class Main {
         Ordenar[] misAlgoritmos = new Ordenar[3];
         misAlgoritmos[0] = new Burbuja();
         misAlgoritmos[1] = new ShellSort();
-        misAlgoritmos[2] = new QuickSort(); // El nuevo hijo
+        misAlgoritmos[2] = new QuickSort(); 
 
         for (int i = 0; i < misAlgoritmos.length; i++) {
             
