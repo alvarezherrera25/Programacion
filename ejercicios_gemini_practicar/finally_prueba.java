@@ -1,6 +1,6 @@
 import java.util.Random;
 
-package ejercicios_gemini;
+package ejercicios_gemini_practicar;
 
 public class finally_prueba {
     public static void main(String[] args) {

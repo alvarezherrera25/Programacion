@@ -1,4 +1,4 @@
-package ejercicios_gemini;
+package ejercicios_gemini_practicar;
 
 /*public class assert_except {
     private double precio = 50.0;
