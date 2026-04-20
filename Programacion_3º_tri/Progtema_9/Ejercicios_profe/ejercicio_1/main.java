@@ -1,16 +1,12 @@
-package Programacion_3º_tri.Progtema_9.Ejercicios_profe.ejercicio_1;
-
-public class main {
-
+package ejercicio_1;
+public class Main {
     public static void main(String[] args) {
  
         Pila pila = new Pila();
  
-        // Numeros que vamos a insertar
         int[] numerosParaInsertar = {34, 7, 85, 12, 60, 3, 47, 91, 25, 78,
                                      55, 19, 63, 40, 8, 72, 31, 50, 96, 14};
  
-        // ── FASE 1: Insertar todos los numeros ──
         System.out.println("  FASE 1 - Insertando numeros en la pila");
         System.out.println();
  
@@ -23,7 +19,6 @@ public class main {
             }
         }
  
-        // ── FASE 2: Extraer 5 elementos ──
         System.out.println();
         System.out.println("  FASE 2 - Extrayendo 5 elementos");
         System.out.println();
@@ -37,7 +32,6 @@ public class main {
             }
         }
  
-        // ── FASE 3: Insertar 4 numeros mas ──
         System.out.println();
         System.out.println("  FASE 3 - Insertando 4 numeros mas");
         System.out.println();
@@ -53,7 +47,6 @@ public class main {
             }
         }
  
-        // ── Estado final antes de vaciar ──
         System.out.println();
         System.out.println("  ESTADO FINAL: " + pila.size() + " elementos en la pila");
         System.out.println();
