@@ -1,0 +1,130 @@
+Cola - Quene - FIFO
+
+    encolar:
+        v[fin] = e;
+        fin = fin +1;
+
+    desencolar:
+        return v[ini ++]
+
+ns porque vuelve a ponerlo
+    encolar:
+        v[fin ++] = e
+    
+    desencolar:
+        aux = v[ini];
+        desplazo (v, 1, fin);
+        fin --;
+
+ahora hizo una cola redonda como un circulo
+
+    encolar:
+    v [fin ++]=e;
+        if(fin == v length){
+            fin = 0;
+        }
+    cola vacia:
+        ini == fin;
+
+    cola llena:
+        ini == fin + 1
+
+La aritmética modular es un sistema aritmético para números 
+enteros, donde los números "dan la vuelta" al alcanzar un 
+cierto valor, denominado módulo, similar a cómo funcionan 
+las horas en un reloj.
+EJ: Es conocida comúnmente como "aritmética del reloj", 
+ya que si el módulo es 12, después de las 12 viene la 1.
+
+
+Estructuras dinámicas y estaticas
+
+solo tienen vida en el bloque que estan definidas --> estaticas
+persisten al salir del bloque --> dinamicas
+
+estructura dinamicas:
+        contenedor:
+            elemento e;
+            //... --> class nodo{
+                        Elemento dato;
+                        Nodo enlace;
+                    }
+
+    Lista enlazada:
+
+                    public class Lista{
+                        private class Nodo{
+                            //...
+                        }
+                        private nodo lista; // referencia extrema
+                        //...
+                        
+                        public void insertar (Elemento e){
+                            dato = e;
+                            enlace = null;
+
+                            lista = nodo
+                        }
+                    }
+
+                    Lista Adolfo -> Leopoldo -> Felipe -> Jose Mari -> ❌
+                    insertar (Jose Mari)
+                    
+                    aux = lista;
+                    lista.dato = (el priemro de lista) Adolfo
+                    aux.dato = Adolfo
+                    aux.enlace.dato= (el segundo de la lista) Leopoldo
+
+                    while (aux enlace != null){
+                        aux = aux.enlace;
+                    }
+                    aux.enlace = nuevo; 
+
+
+                    1. nuevo = new Nodo(dato);
+                    Creas el objeto en memoria (el nuevo vagón).
+                    
+                    2. nuevo.enlace = lista;
+                    El nuevo nodo "mira" hacia donde apuntaba la lista originalmente. Así no pierdes los elementos que ya tenías.
+                    
+                    3. lista = nuevo;
+                    Ahora la variable lista (la cabeza) apunta al nuevo nodo. A partir de este momento, ese objeto es oficialmente el primero.
+                    ej: 
+                    public void agregarAlInicio(int dato) {
+                        Nodo nuevo = new Nodo(dato); // Crear el objeto
+                        nuevo.enlace = lista;        // Conectar con lo anterior
+                        lista = nuevo;               // Actualizar el inicio
+                    }
+
+
+Arbol (binario) -> 2 referencias
+    
+                    referencia externa -> nodo -> nodo 
+                                               -> nodo 
+                    y asi cada nodo tiene 2 subestrucuras iguales y cuando un nodo no tiene referencia se le llama nodo hoja
+
+                nodo{
+                    Elemento dato;
+                    Nodo hijoIzquierdo;
+                    Nodo hijoDerecho;
+                }
+
+                Arbol binario de busqueda
+
+                public class Arbol {
+                    private class Nodo{
+                        Elemento dato;
+                        Nodo izq;
+                        Nodo der;
+                    }
+
+                    private Nodo raiz; // referencia externa
+                    //...
+                    anterior = aux;
+                    if(e<dato){
+                        aux = aux izq;
+                    }else{
+                        aux = aux der;
+                    }
+                }
+

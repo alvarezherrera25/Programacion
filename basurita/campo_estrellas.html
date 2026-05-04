@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo de Estrellas Interactivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0a0a1a, #1a1a3a, #0a0a1a);
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .mensaje {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="estrellas"></canvas>
+    <div class="mensaje">Mueve el ratón para interactuar con las estrellas</div>
+
+    <script>
+        const canvas = document.getElementById('estrellas');
+        const ctx = canvas.getContext('2d');
+
+        let ancho = canvas.width = window.innerWidth;
+        let alto = canvas.height = window.innerHeight();
+
+        // Posición del ratón
+        let mouseX = ancho / 2;
+        let mouseY = alto / 2;
+        
+        // Velocidad del ratón para efecto parallax
+        let mouseVelX = 0;
+        let mouseVelY = 0;
+        let lastMouseX = mouseX;
+        let lastMouseY = mouseY;
+
+        // Array de estrellas
+        const estrellas = [];
+        const NUM_ESTRELLAS = 200;
+
+        // Clase Estrella
+        class Estrella {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * ancho;
+                this.y = Math.random() * alto;
+                this.tamaño = Math.random() * 2 + 0.5;
+                this.brillo = Math.random() * 0.5 + 0.5;
+                this.parallax = Math.random() * 0.8 + 0.2;
+                this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+                this.twinkleOffset = Math.random() * Math.PI * 2;
+                this.color = this.getRandomStarColor();
+            }
+
+            getRandomStarColor() {
+                const colors = [
+                    'rgba(255, 255, 255,',
+                    'rgba(255, 245, 230,',  // Blanco cálido
+                    'rgba(200, 220, 255,',  // Blanco azulado
+                    'rgba(255, 230, 200,',  // Blanco amarillento
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            actualizar(deltaX, deltaY) {
+                // Aplicar movimiento parallax basado en el ratón
+                this.x += deltaX * this.parallax;
+                this.y += deltaY * this.parallax;
+
+                // Efecto de brillo parpadeante
+                this.twinkleOffset += this.twinkleSpeed;
+                
+                // Mantener estrellas dentro de la pantalla
+                if (this.x < 0) this.x = ancho;
+                if (this.x > ancho) this.x = 0;
+                if (this.y < 0) this.y = alto;
+                if (this.y > alto) this.y = 0;
+            }
+
+            dibujar() {
+                // Calcular brillo parpadeante
+                const twinkle = Math.sin(this.twinkleOffset) * 0.2 + 0.8;
+                const alpha = this.brillo * twinkle;
+
+                // Dibujar estrella con efecto de brillo
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                
+                // Brillo exterior
+                const gradiente = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.tamaño * 4
+                );
+                gradiente.addColorStop(0, this.color + '1)');
+                gradiente.addColorStop(0.5, this.color + '0.3)');
+                gradiente.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+                ctx.fillStyle = gradiente;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.tamaño * 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Núcleo de la estrella
+                ctx.fillStyle = this.color + '1)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.tamaño, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // Inicializar estrellas
+        function inicializarEstrellas() {
+            estrellas.length = 0;
+            for (let i = 0; i < NUM_ESTRELLAS; i++) {
+                estrellas.push(new Estrella());
+            }
+        }
+
+        // Efecto de nebulosa de fondo
+        function dibujarNebulosa() {
+            // Gradiente de fondo suave
+            const gradiente = ctx.createRadialGradient(
+                mouseX, mouseY, 0,
+                mouseX, mouseY, Math.max(ancho, alto)
+            );
+            gradiente.addColorStop(0, 'rgba(50, 50, 100, 0.1)');
+            gradiente.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = gradiente;
+            ctx.fillRect(0, 0, ancho, alto);
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        }, { passive: false });
+
+        window.addEventListener('resize', () => {
+            ancho = canvas.width = window.innerWidth;
+            alto = canvas.height = window.innerHeight;
+            inicializarEstrellas();
+        });
+
+        // Animación
+        function animate() {
+            // Calcular velocidad del ratón
+            mouseVelX = (mouseX - lastMouseX) * 0.1;
+            mouseVelY = (mouseY - lastMouseY) * 0.1;
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+
+            // Limpiar canvas con efecto de estela
+            ctx.fillStyle = 'rgba(10, 10, 30, 0.2)';
+            ctx.fillRect(0, 0, ancho, alto);
+
+            // Dibujar nebulosa de fondo
+            dibujarNebulosa();
+
+            // Actualizar y dibujar estrellas
+            estrellas.forEach(estrella => {
+                estrella.actualizar(-mouseVelX, -mouseVelY);
+                estrella.dibujar();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Iniciar
+        inicializarEstrellas();
+        animate();
+    </script>
+</body>
+</html>

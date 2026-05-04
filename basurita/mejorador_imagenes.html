@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mejorador de Imágenes - HD Quality</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group h3::before {
+            content: '⚡';
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .slider-container input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-value {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #00d4ff;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #1a1a2e;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-area .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .workspace {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .preview-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .preview-box h4 {
+            margin-bottom: 10px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .preview-box canvas {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-item input {
+            accent-color: #00d4ff;
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .preset-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+            color: #fff;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .info-bar span {
+            color: #00d4ff;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .preview-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ Mejorador de Imágenes HD</h1>
+            <p>Mejora la calidad y realismo de tus imágenes con un solo clic</p>
+        </header>
+
+        <div class="main-content">
+            <div class="controls-panel">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <div class="icon">📁</div>
+                    <p>Click o arrastra tu imagen aquí</p>
+                    <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">PNG, JPG, JPEG, GIF, WebP</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="basic">Básico</button>
+                    <button class="tab" data-tab="advanced">Avanzado</button>
+                </div>
+
+                <div id="basic-tab">
+                    <div class="presets">
+                        <button class="preset-btn" onclick="applyPreset('vintage')">🎞️ Vintage</button>
+                        <button class="preset-btn" onclick="applyPreset('cinematic')">🎬 Cinematic</button>
+                        <button class="preset-btn" onclick="applyPreset('hdr')">🌈 HDR</button>
+                        <button class="preset-btn" onclick="applyPreset('bw')">⚫ B&N</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Mejoras Rápidas</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="autoEnhance" checked>
+                                <span>Auto-Enhance</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="denoise" checked>
+                                <span>Reducir Ruido</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="sharpen" checked>
+                                <span>Nitidez</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="vignette" checked>
+                                <span>Viñeta</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="advanced-tab" style="display: none;">
+                    <div class="control-group">
+                        <h3>Brillo y Contraste</h3>
+                        <div class="slider-container">
+                            <label>Brillo</label>
+                            <input type="range" id="brightness" min="0" max="200" value="100">
+                            <div class="slider-value" id="brightnessValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Contraste</label>
+                            <input type="range" id="contrast" min="0" max="200" value="100">
+                            <div class="slider-value" id="contrastValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Exposición</label>
+                            <input type="range" id="exposure" min="0" max="200" value="100">
+                            <div class="slider-value" id="exposureValue">100%</div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Color</h3>
+                        <div class="slider-container">
+                            <label>Saturación</label>
+                            <input type="range" id="saturation" min="0" max="200" value="100">
+                            <div class="slider-value" id="saturationValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Temp. Color</label>
+                            <input type="range" id="temperature" min="0" max="200" value="100">
+                            <div class="slider-value" id="temperatureValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Vivacidad</label>
+                            <input type="range" id="vibrance" min="0" max="200" value="100">
+                            <div class="slider-value" id="vibranceValue">100%</div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Detalle</h3>
+                        <div class="slider-container">
+                            <label>Nitidez</label>
+                            <input type="range" id="sharpness" min="0" max="200" value="100">
+                            <div class="slider-value" id="sharpnessValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Claridad</label>
+                            <input type="range" id="clarity" min="0" max="200" value="100">
+                            <div class="slider-value" id="clarityValue">100%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Reducir Ruido</label>
+                            <input type="range" id="noiseReduction" min="0" max="100" value="0">
+                            <div class="slider-value" id="noiseReductionValue">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Efectos</h3>
+                        <div class="slider-container">
+                            <label>Viñeta</label>
+                            <input type="range" id="vignetteIntensity" min="0" max="100" value="0">
+                            <div class="slider-value" id="vignetteIntensityValue">0%</div>
+                        </div>
+                        <div class="slider-container">
+                            <label>Desenfoque Borde</label>
+                            <input type="range" id="borderBlur" min="0" max="50" value="0">
+                            <div class="slider-value" id="borderBlurValue">0px</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="applyBtn">✨ Aplicar Mejoras</button>
+                <button class="btn btn-secondary" id="resetBtn">↺ Restablecer</button>
+                <button class="btn btn-success" id="downloadBtn" style="display: none;">💾 Descargar Imagen</button>
+            </div>
+
+            <div class="workspace">
+                <div class="preview-container">
+                    <div class="preview-box">
+                        <h4>📷 Imagen Original</h4>
+                        <div class="placeholder" id="originalPlaceholder">Sube una imagen para comenzar</div>
+                        <canvas id="originalCanvas" style="display: none;"></canvas>
+                    </div>
+                    <div class="preview-box">
+                        <h4>✨ Imagen Mejorada</h4>
+                        <div class="placeholder" id="resultPlaceholder">La imagen mejorada aparecerá aquí</div>
+                        <canvas id="resultCanvas" style="display: none;"></canvas>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Procesando imagen...</p>
+                </div>
+
+                <div class="info-bar">
+                    <div>Dimensiones: <span id="dimensions">-</span></div>
+                    <div>Tamaño: <span id="fileSize">-</span></div>
+                    <div>Calidad: <span id="quality">-</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let originalImage = null;
+        let originalImageData = null;
+
+        // Elementos del DOM
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const originalPlaceholder = document.getElementById('originalPlaceholder');
+        const resultPlaceholder = document.getElementById('resultPlaceholder');
+        const loading = document.getElementById('loading');
+        const applyBtn = document.getElementById('applyBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Event Listeners
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#00d4ff';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                loadImage(e.target.files[0]);
+            }
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                document.getElementById('basic-tab').style.display = tabId === 'basic' ? 'block' : 'none';
+                document.getElementById('advanced-tab').style.display = tabId === 'advanced' ? 'block' : 'none';
+            });
+        });
+
+        // Sliders
+        document.querySelectorAll('#advanced-tab input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', () => {
+                const valueDisplay = document.getElementById(slider.id + 'Value');
+                if (valueDisplay) {
+                    valueDisplay.textContent = slider.value + '%';
+                }
+            });
+        });
+
+        applyBtn.addEventListener('click', applyEnhancements);
+        resetBtn.addEventListener('click', resetImage);
+        downloadBtn.addEventListener('click', downloadImage);
+
+        // Cargar imagen
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    originalPlaceholder.style.display = 'none';
+                    originalCanvas.style.display = 'block';
+                    
+                    // Configurar canvas original
+                    const ctx = originalCanvas.getContext('2d');
+                    originalCanvas.width = img.width;
+                    originalCanvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    originalImageData = ctx.getImageData(0, 0, img.width, img.height);
+
+                    // Mostrar información
+                    document.getElementById('dimensions').textContent = `${img.width} x ${img.height}`;
+                    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+
+                    // Aplicar mejoras por defecto
+                    applyEnhancements();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Aplicar mejoras
+        function applyEnhancements() {
+            if (!originalImage) {
+                alert('Por favor, carga una imagen primero');
+                return;
+            }
+
+            loading.classList.add('active');
+            resultPlaceholder.style.display = 'none';
+            resultCanvas.style.display = 'block';
+
+            setTimeout(() => {
+                const ctx = resultCanvas.getContext('2d');
+                resultCanvas.width = originalCanvas.width;
+                resultCanvas.height = originalCanvas.height;
+                
+                // Obtener datos de la imagen
+                let imageData = new ImageData(
+                    new Uint8ClampedArray(originalImageData.data),
+                    originalImageData.width,
+                    originalImageData.height
+                );
+
+                // Aplicar mejoras basadas en los controles
+                imageData = applyAllAdjustments(imageData);
+
+                // Dibujar resultado
+                ctx.putImageData(imageData, 0, 0);
+
+                loading.classList.remove('active');
+                downloadBtn.style.display = 'block';
+
+                // Calcular puntuación de calidad
+                const quality = calculateQuality(imageData);
+                document.getElementById('quality').textContent = quality + '/100';
+            }, 100);
+        }
+
+        // Aplicar todos los ajustes
+        function applyAllAdjustments(imageData) {
+            let data = imageData.data;
+
+            // Obtener valores de los controles
+            const brightness = parseInt(document.getElementById('brightness').value) / 100;
+            const contrast = parseInt(document.getElementById('contrast').value) / 100;
+            const saturation = parseInt(document.getElementById('saturation').value) / 100;
+            const exposure = parseInt(document.getElementById('exposure').value) / 100;
+            const temperature = parseInt(document.getElementById('temperature').value) / 100;
+            const vibrance = parseInt(document.getElementById('vibrance').value) / 100;
+            const sharpness = parseInt(document.getElementById('sharpness').value) / 100;
+            const clarity = parseInt(document.getElementById('clarity').value) / 100;
+            const noiseReduction = parseInt(document.getElementById('noiseReduction').value) / 100;
+            const vignetteIntensity = parseInt(document.getElementById('vignetteIntensity').value) / 100;
+
+            // Aplicar ajustes de曝光 y brillo
+            data = applyExposureAndBrightness(data, exposure, brightness);
+
+            // Aplicar contraste
+            data = applyContrast(data, contrast);
+
+            // Aplicar saturación y vivacidad
+            data = applySaturationAndVibrance(data, saturation, vibrance);
+
+            // Aplicar temperatura de color
+            data = applyTemperature(data, temperature);
+
+            // Aplicar nitidez
+            data = applySharpness(data, sharpness);
+
+            // Aplicar claridad
+            data = applyClarity(data, clarity);
+
+            // Reducir ruido
+            data = applyNoiseReduction(data, noiseReduction);
+
+            // Aplicar viñeta
+            data = applyVignette(data, vignetteIntensity);
+
+            return new ImageData(data, imageData.width, imageData.height);
+        }
+
+        // Ajustes de exposición y brillo
+        function applyExposureAndBrightness(data, exposure, brightness) {
+            const adjusted = new Uint8ClampedArray(data.length);
+            for (let i = 0; i < data.length; i += 4) {
+                for (let c = 0; c < 3; c++) {
+                    let value = data[i + c];
+                    value = (value / 255) * exposure;
+                    value = (value - 0.5) * brightness + 0.5;
+                    adjusted[i + c] = Math.min(255, Math.max(0, value * 255));
+                }
+                adjusted[i + 3] = data[i + 3];
+            }
+            return adjusted;
+        }
+
+        // Aplicar contraste
+        function applyContrast(data, contrast) {
+            const adjusted = new Uint8ClampedArray(data.length);
+            const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+            for (let i = 0; i < data.length; i += 4) {
+                adjusted[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
+                adjusted[i + 1] = Math.min(255, Math.max(0, factor * (data[i + 1] - 128) + 128));
+                adjusted[i + 2] = Math.min(255, Math.max(0, factor * (data[i + 2] - 128) + 128));
+                adjusted[i + 3] = data[i + 3];
+            }
+            return adjusted;
+        }
+
+        // Aplicar saturación y vivacidad
+        function applySaturationAndVibrance(data, saturation, vibrance) {
+            const adjusted = new Uint8ClampedArray(data.length);
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = 0.2989 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                
+                // Saturación
+                let satFactor = saturation;
+                
+                // Vivacidad (saturación inteligente para colores menos saturados)
+                const vibFactor = vibrance;
+                const saturationAmount = Math.abs(data[i] - gray) / 255;
+                const vivacityBoost = (1 - saturationAmount) * (vibFactor - 1) * 0.5;
+                
+                satFactor += vivacityBoost;
+
+                adjusted[i] = Math.min(255, Math.max(0, gray + satFactor * (data[i] - gray)));
+                adjusted[i + 1] = Math.min(255, Math.max(0, gray + satFactor * (data[i + 1] - gray)));
+                adjusted[i + 2] = Math.min(255, Math.max(0, gray + satFactor * (data[i + 2] - gray)));
+                adjusted[i + 3] = data[i + 3];
+            }
+            return adjusted;
+        }
+
+        // Aplicar temperatura de color
+        function applyTemperature(data, temperature) {
+            const adjusted = new Uint8ClampedArray(data.length);
+            const temp = (temperature - 100) / 100;
+            for (let i = 0; i < data.length; i += 4) {
+                adjusted[i] = Math.min(255, Math.max(0, data[i] + temp * 30));     // Rojo
+                adjusted[i + 1] = data[i + 1];                                   // Verde (sin cambio)
+                adjusted[i + 2] = Math.min(255, Math.max(0, data[i + 2] - temp * 30)); // Azul
+                adjusted[i + 3] = data[i + 3];
+            }
+            return adjusted;
+        }
+
+        // Aplicar nitidez (usando unsharp mask simplificado)
+        function applySharpness(data, sharpness) {
+            if (sharpness <= 1) return data;
+            
+            const width = Math.sqrt(data.length / 4);
+            const adjusted = new Uint8ClampedArray(data.length);
+            const amount = (sharpness - 1) * 2;
+            
+            // Copiar datos originales
+            for (let i = 0; i < data.length; i++) {
+                adjusted[i] = data[i];
+            }
+            
+            // Aplicar nitidez simple (aumentar contraste local)
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                for (let c = 0; c < 3; c++) {
+                    const diff = data[i + c] - avg;
+                    adjusted[i + c] = Math.min(255, Math.max(0, data[i + c] + diff * amount * 0.5));
+                }
+            }
+            
+            return adjusted;
+        }
+
+        // Aplicar claridad (mid-contrast local)
+        function applyClarity(data, clarity) {
+            if (clarity <= 1) return data;
+            
+            const adjusted = new Uint8ClampedArray(data.length);
+            const amount = (clarity - 1) * 0.3;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = 0.2989 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                const normalized = gray / 255;
+                
+                for (let c = 0; c < 3; c++) {
+                    const normalizedChannel = data[i + c] / 255;
+                    const result = normalizedChannel + (normalizedChannel - normalized) * amount;
+                    adjusted[i + c] = Math.min(255, Math.max(0, result * 255));
+                }
+                adjusted[i + 3] = data[i + 3];
+            }
+            
+            return adjusted;
+        }
+
+        // Reducción de ruido (simplificada)
+        function applyNoiseReduction(data, noiseReduction) {
+            if (noiseReduction <= 0) return data;
+            
+            const adjusted = new Uint8ClampedArray(data.length);
+            const amount = noiseReduction / 100;
+            const width = Math.sqrt(data.length / 4);
+            
+            for (let y = 1; y < width - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    // Promedio simple con vecinos
+                    let r = 0, g = 0, b = 0;
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const nidx = ((y + dy) * width + (x + dx)) * 4;
+                            r += data[nidx];
+                            g += data[nidx + 1];
+                            b += data[nidx + 2];
+                        }
+                    }
+                    
+                    r /= 9;
+                    g /= 9;
+                    b /= 9;
+                    
+                    adjusted[idx] = data[idx] * (1 - amount) + r * amount;
+                    adjusted[idx + 1] = data[idx + 1] * (1 - amount) + g * amount;
+                    adjusted[idx + 2] = data[idx + 2] * (1 - amount) + b * amount;
+                    adjusted[idx + 3] = data[idx + 3];
+                }
+            }
+            
+            return adjusted;
+        }
+
+        // Aplicar viñeta
+        function applyVignette(data, vignetteIntensity) {
+            if (vignetteIntensity <= 0) return data;
+            
+            const adjusted = new Uint8ClampedArray(data.length);
+            const width = Math.sqrt(data.length / 4);
+            const centerX = width / 2;
+            const centerY = width / 2;
+            const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+            
+            for (let y = 0; y < width; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const factor = 1 - (dist / maxDist) * vignetteIntensity;
+                    
+                    adjusted[idx] = data[idx] * factor;
+                    adjusted[idx + 1] = data[idx + 1] * factor;
+                    adjusted[idx + 2] = data[idx + 2] * factor;
+                    adjusted[idx + 3] = data[idx + 3];
+                }
+            }
+            
+            return adjusted;
+        }
+
+        // Presets
+        function applyPreset(preset) {
+            switch (preset) {
+                case 'vintage':
+                    setSlider('brightness', 110);
+                    setSlider('contrast', 90);
+                    setSlider('saturation', 80);
+                    setSlider('temperature', 110);
+                    setSlider('vignetteIntensity', 30);
+                    break;
+                case 'cinematic':
+                    setSlider('brightness', 95);
+                    setSlider('contrast', 120);
+                    setSlider('saturation', 90);
+                    setSlider('temperature', 90);
+                    setSlider('vignetteIntensity', 40);
+                    setSlider('clarity', 120);
+                    break;
+                case 'hdr':
+                    setSlider('brightness', 110);
+                    setSlider('contrast', 130);
+                    setSlider('saturation', 130);
+                    setSlider('vibrance', 150);
+                    setSlider('clarity', 140);
+                    break;
+                case 'bw':
+                    setSlider('saturation', 0);
+                    setSlider('contrast', 110);
+                    setSlider('brightness', 105);
+                    setSlider('vignetteIntensity', 25);
+                    break;
+            }
+            applyEnhancements();
+        }
+
+        function setSlider(id, value) {
+            const slider = document.getElementById(id);
+            if (slider) {
+                slider.value = value;
+                const valueDisplay = document.getElementById(id + 'Value');
+                if (valueDisplay) {
+                    valueDisplay.textContent = value + '%';
+                }
+            }
+        }
+
+        // Restablecer imagen
+        function resetImage() {
+            // Restablecer todos los sliders
+            const sliders = document.querySelectorAll('#advanced-tab input[type="range"]');
+            sliders.forEach(slider => {
+                const defaultValues = {
+                    brightness: 100, contrast: 100, exposure: 100,
+                    saturation: 100, temperature: 100, vibrance: 100,
+                    sharpness: 100, clarity: 100, noiseReduction: 0,
+                    vignetteIntensity: 0, borderBlur: 0
+                };
+                slider.value = defaultValues[slider.id] || 100;
+                const valueDisplay = document.getElementById(slider.id + 'Value');
+                if (valueDisplay) {
+                    valueDisplay.textContent = slider.value + '%';
+                }
+            });
+
+            // Restablecer checkboxes
+            document.getElementById('autoEnhance').checked = true;
+            document.getElementById('denoise').checked = true;
+            document.getElementById('sharpen').checked = true;
+            document.getElementById('vignette').checked = true;
+
+            // Volver a aplicar mejoras
+            if (originalImage) {
+                applyEnhancements();
+            }
+        }
+
+        // Descargar imagen
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'imagen_mejorada.png';
+            link.href = resultCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Calcular puntuación de calidad
+        function calculateQuality(imageData) {
+            let score = 50;
+            const data = imageData.data;
+            
+            // Analizar contraste
+            let min = 255, max = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                min = Math.min(min, gray);
+                max = Math.max(max, gray);
+            }
+            const contrastRange = max - min;
+            score += Math.min(30, contrastRange / 10);
+            
+            // Analizar saturación
+            let totalSaturation = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                const sat = Math.abs(data[i] - gray) + Math.abs(data[i + 1] - gray) + Math.abs(data[i + 2] - gray);
+                totalSaturation += sat;
+            }
+            const avgSaturation = totalSaturation / (data.length / 4);
+            score += Math.min(20, avgSaturation / 15);
+            
+            return Math.min(100, Math.round(score));
+        }
+
+        // Formatear tamaño de archivo
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>
