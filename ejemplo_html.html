@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+  <head>
+    <meta charset="UTF-8"/>
+
+    <title>Resumen UD2: HTML y XHTML</title>
+
+    <meta name="description" content="Resumen de etiquetas de la UD2"/>
+    <meta name="author" content="Alumno DAM1"/>
+
+    <style>
+      body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+      section { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+      h2 { border-bottom: 2px solid #333; padding-bottom: 5px; color: #2c3e50; }
+      code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; color: #c7254e; }
+      .nota { background-color: #e7f3fe; border-left: 6px solid #2196F3; padding: 10px; margin: 10px 0; font-size: 0.9em; }
+      table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+      th, td { border: 1px solid #999; padding: 8px; text-align: left; }
+      th { background-color: #eee; }
+    </style>
+  </head>
+
+  <body>
+
+    <header>
+      <h1>UD 2: Elementos y Estructura</h1>
+      <p>Este documento contiene <strong>todos los ejemplos prácticos</strong> mencionados en la unidad.</p>
+    </header>
+
+    <nav>
+      <h3>Índice Rápido:</h3>
+      <ul>
+        <li><a href="#texto">Formato de Texto</a></li>
+        <li><a href="#listas">Listas y Agrupación</a></li>
+        <li><a href="#tablas">Tablas</a></li>
+        <li><a href="#multimedia">Multimedia e Incrustados</a></li>
+      </ul>
+    </nav>
+
+    <main>
+
+      <section id="texto">
+        <h2>1. Formato de Texto (Elementos de Línea)</h2>
+        
+        <div class="nota">
+          <strong>NOTA:</strong> Los elementos de línea no generan saltos de línea y 
+          se usan dentro de bloques (como párrafos).
+        </div>
+
+        <p>
+          Este texto es <strong>muy importante (strong)</strong>. 
+          Este texto está en <b>negrita simple (b)</b>.
+          
+          Quiero dar <em>énfasis (em)</em> a esto.
+          Palabra en <i>cursiva (i)</i>.
+        </p>
+
+        <p>
+          El precio anterior era <del>50€</del>.
+          El nuevo precio es <ins>40€</ins>.
+          <s>Esto ya no vale (s)</s>.
+        </p>
+
+        <p>
+          Podemos <mark>resaltar texto (mark)</mark>.
+          <small>Texto pequeño o legal (small).</small>
+          Fórmula: E = mc<sup>2</sup> (sup) | H<sub>2</sub>O (sub).
+        </p>
+
+        <p>
+          Estudio <abbr title="HyperText Markup Language">HTML</abbr> y <abbr title="World Wide Web">WWW</abbr>.
+          
+          Una <dfn>variable</dfn> es un contenedor de datos.
+          
+          Como dijo el profesor: <q>Repasad las etiquetas a diario</q>.
+          
+          Libro: <cite>Don Quijote</cite>.
+        </p>
+
+        <p>
+          Usa la etiqueta <code>&lt;h1&gt;</code> para títulos.
+          
+          Pulsa <kbd>Ctrl</kbd> + <kbd>C</kbd> para copiar.
+          
+          El sistema dirá: <samp>Mensaje enviado correctamente</samp>.
+          
+          Si <var>x</var> = 3...
+        </p>
+
+        <pre>
+  [PRE] Texto Preformateado:
+      Mantiene      los espacios
+      y los saltos de línea.
+</pre>
+
+        <p>La clase es el <time datetime="2024-01-15">15 de Enero</time>.</p>
+      </section>
+
+
+      <section id="listas">
+        <h2>2. Estructura y Listas (Elementos de Bloque)</h2>
+
+        <div class="agrupacion">
+          
+          <h3>Lista Desordenada (ul)</h3>
+          <ul>
+            <li>Elemento 1</li>
+            <li>Elemento 2</li>
+          </ul>
+
+          <h3>Lista Ordenada (ol) - Ejemplo Receta</h3>
+          <ol>
+            <li>Batir los huevos.</li>
+            <li>Freír las patatas.</li>
+            <li>Mezclar todo.</li>
+          </ol>
+
+          <h3>Lista de Definición (dl)</h3>
+          <dl>
+            <dt>HTML</dt> <dd>Lenguaje de marcado para crear páginas web.</dd> <dt>W3C</dt>
+            <dd>World Wide Web Consortium, define los estándares.</dd>
+          </dl>
+        </div>
+
+        <address>
+          <strong>Contacto:</strong><br/>
+          <a href="mailto:alumno@ies.com">alumno@ies.com</a><br/>
+          IES Pablo Serrano
+        </address>
+
+        <blockquote>
+          "HTML fue diseñado en 1991 por Tim Berners-Lee para almacenar y transmitir información."
+        </blockquote>
+      </section>
+
+
+      <section id="tablas">
+        <h2>3. Tablas (Estructura Tabular)</h2>
+        <table>
+          <caption>Ventas de Consolas (Ejemplo del PDF)</caption>
+          
+          <thead>
+            <tr> <th>Consola</th> <th>Año Lanzamiento</th>
+              <th>Ventas</th>
+            </tr>
+          </thead>
+          
+          <tfoot>
+            <tr>
+              <td colspan="3">Datos aproximados (colspan fusiona 3 columnas)</td>
+            </tr>
+          </tfoot>
+
+          <tbody>
+            <tr>
+              <td>PlayStation 4</td> <td>2013</td>
+              <td>117M</td>
+            </tr>
+            <tr>
+              <td>Nintendo Switch</td>
+              <td>2017</td>
+              <td>130M</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+
+      <section id="multimedia">
+        <h2>4. Multimedia, Figuras e Interactividad</h2>
+
+        <figure>
+          <picture>
+            <img src="https://via.placeholder.com/150" alt="Marcador de posición" />
+          </picture>
+          <figcaption>Fig 1. Ejemplo de estructura Figure</figcaption>
+        </figure>
+
+        <details>
+          <summary>Haz clic para desplegar video (iframe)</summary>
+          <p>
+            <iframe width="300" height="200" src="https://www.wikipedia.org"></iframe>
+          </p>
+        </details>
+
+        <dialog open>
+          <p>Esto es un elemento &lt;dialog&gt; abierto.</p>
+        </dialog>
+      </section>
+
+      </main>
+
+    <footer>
+      <hr/> <p>
+        &copy; 2024 IES Pablo Serrano.<br/>
+        Símbolos: &euro; (Euro), &lt; (Menor que), &gt; (Mayor que).
+      </p>
+    </footer>
+
+    <script>
+      console.log("Documento cargado correctamente");
+    </script>
+    
+    <noscript>Activa JavaScript para ver todo el contenido.</noscript>
+
+  </body>
+</html>
