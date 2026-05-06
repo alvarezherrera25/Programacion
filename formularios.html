@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de Registro Simplificado</title>
+</head>
+<body>
+
+    <h1>Registro de Usuario</h1>
+
+    <!-- El formulario envía los datos a 'envio.html' usando el método POST [2, 3] -->
+    <form action="envio.html" method="POST">
+        
+        <!-- Nombre de usuario -->
+        <p>
+            <label for="usuario">Nombre de usuario:</label>
+            <input type="text" id="usuario" name="usuario" placeholder="Ej: Juan88" required>
+        </p>
+
+        <!-- Contraseña -->
+        <p>
+            <label for="pass">Contraseña:</label>
+            <input type="password" id="pass" name="pass" required>
+        </p>
+
+        <!-- Correo electrónico con validación automática [4, 5] -->
+        <p>
+            <label for="correo">Email:</label>
+            <input type="email" id="correo" name="correo" required>
+        </p>
+
+        <!-- Selección única con botones de radio [4] -->
+        <p>¿Aceptas las condiciones? 
+			<label for="si">Sí</label>
+            <input type="radio" id="si" name="acepta" value="si"> 
+
+            <label for="no">No</label>
+			<input type="radio" id="no" name="acepta" value="no" checked> 
+			
+        </p>
+
+        <!-- Lista desplegable [6] -->
+        <p>
+            <label for="ciudad">Ciudad:</label>
+            <select id="ciudad" name="ciudad">
+                <option value="zgz">Zaragoza</option>
+                <option value="mad">Madrid</option>
+                <option value="bcn">Barcelona</option>
+            </select>
+        </p>
+
+        <!-- Área de texto para comentarios largos [7] -->
+        <p>
+            <label for="comentarios">Comentarios:</label><br>
+            <textarea id="comentarios" name="comentarios" rows="3" cols="30"></textarea>
+        </p>
+
+        <!-- Botones de envío y borrado [8] -->
+        <p>
+            <input type="submit" value="Enviar Formulario">
+            <input type="reset" value="Limpiar campos">
+        </p>
+
+    </form>
+
+</body>
+</html>
