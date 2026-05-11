@@ -10,8 +10,8 @@ Pista: Recuerda que el método read() devuelve -1 cuando llega al final del fich
 import java.io.*;
 public class Main {
     public static void main(String[] args) {
-        String originalFile = "C:\\Users\\alvarezherrera\\Documents\\Programacion\\ejercicios_notebook\\tema_11\\ejercicio_1\\original.txt";
-        String copyFile = "C:\\Users\\alvarezherrera\\Documents\\Programacion\\ejercicios_notebook\\tema_11\\ejercicio_1\\copia.txt";
+        String originalFile = "E:\\HugoAH\\Programacion\\ejercicios_notebook\\tema_11\\ejercicio_1\\original.txt";
+        String copyFile = "E:\\HugoAH\\Programacion\\ejercicios_notebook\\tema_11\\ejercicio_1\\copia.txt";
         FileReader reader = null;
         FileWriter writer = null;
         try {

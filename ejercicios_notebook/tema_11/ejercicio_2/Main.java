@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
-        String filePath = "C:\\Users\\alvarezherrera\\Documents\\Programacion\\ejercicios_notebook\\tema_11\\ejercicio_2\\palabras.txt";
+        String filePath = "E:\\\\HugoAH\\\\Programacion\\\\ejercicios_notebook\\\\tema_11\\\\ejercicio_2\\\\palabras.txt";
         try (Scanner scanner = new Scanner(new BufferedReader(new FileReader(filePath)))) {
             while (scanner.hasNext()) {
                 String palabra = scanner.next();
