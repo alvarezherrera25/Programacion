@@ -12,5 +12,13 @@ dominó: dos fichas encajan si se pueden colocar una al lado de la otra. Por eje
 par solo podrán encajar fichas que contengan un 2 o un 4, porque el 5 está encajado.
 */
 public class Main {
-    
+    public static void main(String[] args) {
+        FichaDomino ficha1 = new FichaDomino(2, 5);
+        FichaDomino ficha2 = new FichaDomino(4, 5);
+        FichaDomino ficha3 = new FichaDomino(2, 4);
+
+        System.out.println("Ficha 1: " + ficha1);
+        System.out.println("Ficha 2: " + ficha2);
+        System.out.println("Ficha 3: " + ficha3);
+    }
 }
