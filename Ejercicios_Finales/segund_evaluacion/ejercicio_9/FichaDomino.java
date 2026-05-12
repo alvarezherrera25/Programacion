@@ -1,8 +1,8 @@
 package Ejercicios_Finales.segund_evaluacion.ejercicio_9;
 
 public class FichaDomino {
-    public int lado1;
-    public int lado2;
+    private int lado1;
+    private int lado2;
 
     public FichaDomino(int lado1, int lado2) {
         this.lado1 = lado1;
@@ -13,12 +13,25 @@ public class FichaDomino {
         return lado1 == lado2;
     }
 
-    public boolean esCompatible(FichaDomino otra) {
+    public boolean encaja(FichaDomino otra) {
         return this.lado1 == otra.lado1 || this.lado1 == otra.lado2 ||
-               this.lado2 == otra.lado1 || this.lado2 == otra.lado2;
+                this.lado2 == otra.lado1 || this.lado2 == otra.lado2;
     }
 
-    @Override
+    public void girar() {
+        int aux = this.lado1;
+        this.lado1 = this.lado2;
+        this.lado2 = aux;
+    }
+
+    public int getLado1() {
+        return lado1;
+    }
+
+    public int getLado2() {
+        return lado2;
+    }
+
     public String toString() {
         return "[" + lado1 + "|" + lado2 + "]";
     }
