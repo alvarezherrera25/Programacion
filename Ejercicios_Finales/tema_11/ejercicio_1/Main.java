@@ -19,6 +19,10 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Error al escribir en el fichero: " + e.getMessage());
         }
+
+        try {
+            BufferedReader bt = new BufferedReader(new FileReader)
+        }
     }
 
     public static boolean esPrimo(int numero) {
