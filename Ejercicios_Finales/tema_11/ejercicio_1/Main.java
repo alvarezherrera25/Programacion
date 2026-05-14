@@ -1,4 +1,4 @@
-package Ejercicios_Finales.tema_11.ejercicio_1;
+package Ejercicios_Finales.tema_11.ejercicio_1y2;
 
 /*
 Escribe un programa que guarde en un fichero con nombre primos.txt los
