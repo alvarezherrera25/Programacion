@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(
-                    "C:\\Users\\alvarezherrera\\Documents\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres.txt"));
+                    "E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres.txt"));
             ArrayList<String> nombres = new ArrayList<>();
             String linea = br.readLine();
 
@@ -24,7 +24,7 @@ public class Main {
             }
             Collections.sort(nombres);
             BufferedWriter bw = new BufferedWriter(new FileWriter(
-                    "C:\\Users\\alvarezherrera\\Documents\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres_sort.txt"));
+                    "E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres_sort.txt"));
             for (String nombre : nombres) {
                 bw.write(nombre + "\n");
             }

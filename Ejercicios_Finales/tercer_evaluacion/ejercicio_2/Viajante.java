@@ -1,55 +1,22 @@
 package Ejercicios_Finales.tercer_evaluacion.ejercicio_2;
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
 
 public class Viajante {
-    private String dni;
-    private String nombre;
-    private int antiguedad;
-    private double distanciaRecorrida;
-    private ArrayList<Venta> ventas;
+    String dni, nombre;
+    int antiguedad;
+    double km;
+    ArrayList<Venta> ventas = new ArrayList<>();
 
-    public Viajante(String dni, String nombre, int antiguedad) {
+    public Viajante(String dni, String nombre, int ant, double km) {
         this.dni = dni;
         this.nombre = nombre;
-        this.antiguedad = antiguedad;
-        this.distanciaRecorrida = 0;
-        this.ventas = new ArrayList<>();
+        this.antiguedad = ant;
+        this.km = km;
     }
 
-    public String getDni() {
-        return dni;
+    public double totalCobrado() {
+        double total = 0;
+        for (Venta v : ventas) if (v.cobrada) total += v.importe;
+        return total;
     }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public int getAntiguedad() {
-        return antiguedad;
-    }
-
-    public double getDistanciaRecorrida() {
-        return distanciaRecorrida;
-    }
-
-    public void incrementarDistancia(double km) {
-        this.distanciaRecorrida += km;
-    }
-
-    public void agregarVenta(Venta venta) {
-        ventas.add(venta);
-    }
-
-    public void mostrarViajante() {
-        System.out.println("DNI: " + dni);
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Antigüedad: " + antiguedad + " años");
-        System.out.println("Distancia Recorrida: " + distanciaRecorrida + " km");
-        System.out.println("Ventas:");
-        for (Venta venta : ventas) {
-            venta.mostrarVenta();
-            System.out.println();
-        }
-    }
- }
+}

@@ -33,9 +33,100 @@ El histórico de ventas almacenará las ventas cobradas hasta el momento de inic
 // Crearemos tres clases: Viajante, Venta y Main.
 import java.util.*;
 import java.io.*;
+
 public class Main {
+    static HashMap<String, Viajante> lista = new HashMap<>();
+    static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        HashMap<String, Viajante> viajantes = new HashMap<>(); 
+        cargar();
+        int op;
+        do {
+            System.out.print(
+            "1.Añadir\n 2.Eliminar\n 3.Listar\n 4.Reiniciar\n 5.+Km\n 6.+Venta\n 7.Cobrar\n 8.Pendientes\n 9.Salir: ");
+            op = sc.nextInt(); sc.nextLine();
+            
+            switch (op) {
+                case 1 -> {
+                    System.out.print("DNI, Nombre, Antigüedad: ");
+                    String d = sc.next(); String n = sc.next(); int a = sc.nextInt();
+                    lista.put(d, new Viajante(d, n, a, 0));
+                }
+                case 2 -> {
+                    System.out.print("DNI a borrar: ");
+                    lista.remove(sc.next());
+                }
+                case 3 -> {
+                    for (Viajante v : lista.values()) 
+                        System.out.println(v.dni + " - " + v.nombre + " - Km: " + v.km + " - Cobrado: " + v.totalCobrado());
+                }
+                case 4 -> {
+                    try (PrintWriter pw = new PrintWriter(new FileWriter("E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tercer_evaluacion\\ejercicio_2\\Historico.txt", true))) {
+                        for (Viajante v : lista.values()) {
+                            v.km = 0;
+                            v.ventas.removeIf(ven -> {
+                                if (ven.cobrada) {
+                                    pw.println(v.dni + "," + ven);
+                                    return true;
+                                }
+                                return false;
+                            });
+                        }
+                    } catch (IOException e) { e.printStackTrace(); }
+                }
+                case 5 -> {
+                    System.out.print("DNI y Km: ");
+                    Viajante v = lista.get(sc.next());
+                    if (v != null) v.km += sc.nextDouble();
+                }
+                case 6 -> {
+                    System.out.print("DNI, Fecha, Importe, Cliente: ");
+                    Viajante v = lista.get(sc.next());
+                    if (v != null) v.ventas.add(new Venta(sc.next(), sc.nextDouble(), sc.next(), false));
+                }
+                case 7 -> {
+                    System.out.print("DNI: ");
+                    Viajante v = lista.get(sc.next());
+                    if (v != null) {
+                        for (int i = 0; i < v.ventas.size(); i++) 
+                            if (!v.ventas.get(i).cobrada) System.out.println(i + ": " + v.ventas.get(i));
+                        System.out.print("Nº de venta: ");
+                        v.ventas.get(sc.nextInt()).cobrada = true;
+                    }
+                }
+                case 8 -> {
+                    System.out.print("DNI: ");
+                    Viajante v = lista.get(sc.next());
+                    if (v != null) for (Venta ven : v.ventas) if (!ven.cobrada) System.out.println(ven);
+                }
+            }
+        } while (op != 9);
+        guardar();
+    }
+
+    static void cargar() {
+        try {
+            Scanner sV = new Scanner(new File("E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tercer_evaluacion\\ejercicio_2\\Viajante.txt"));
+            while (sV.hasNextLine()) {
+                String[] d = sV.nextLine().split(",");
+                lista.put(d[0], new Viajante(d[0], d[1], Integer.parseInt(d[2]), Double.parseDouble(d[3])));
+            }
+            Scanner sVen = new Scanner(new File("Ventas.txt"));
+            while (sVen.hasNextLine()) {
+                String[] d = sVen.nextLine().split(",");
+                if (lista.containsKey(d[0])) 
+                    lista.get(d[0]).ventas.add(new Venta(d[1], Double.parseDouble(d[2]), d[3], Boolean.parseBoolean(d[4])));
+            }
+        } catch (Exception e) { System.out.println("Iniciando archivos nuevos..."); }
+    }
+
+    static void guardar() {
+        try (PrintWriter pVi = new PrintWriter("E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tercer_evaluacion\\ejercicio_2\\Viajante.txt"); 
+             PrintWriter pVe = new PrintWriter("E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tercer_evaluacion\\ejercicio_2\\Ventas.txt")) {
+            for (Viajante v : lista.values()) {
+                pVi.println(v.dni + "," + v.nombre + "," + v.antiguedad + "," + v.km);
+                for (Venta ven : v.ventas) pVe.println(v.dni + "," + ven);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }
