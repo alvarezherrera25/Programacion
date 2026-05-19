@@ -12,24 +12,10 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+        ficheros f = new ficheros();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(
-                    "E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres.txt"));
-            ArrayList<String> nombres = new ArrayList<>();
-            String linea = br.readLine();
-
-            while (linea != null) {
-                nombres.add(linea);
-                linea = br.readLine();
-            }
-            Collections.sort(nombres);
-            BufferedWriter bw = new BufferedWriter(new FileWriter(
-                    "E:\\HugoAH\\Programacion\\Ejercicios_Finales\\tema_11\\ejercicio_4\\nombres_sort.txt"));
-            for (String nombre : nombres) {
-                bw.write(nombre + "\n");
-            }
-            bw.close();
-            br.close();
+            f.ordenarPalabras();
+            System.out.println("Fichero ordenado correctamente");
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
         }
